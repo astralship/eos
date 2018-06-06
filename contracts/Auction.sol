@@ -8,11 +8,12 @@ contract Auction {
   bool public initialPrice = true; // at first asking price is OK, then +25% required
   uint public timestampEnd;
   address public beneficiary;
-  bool public withdrawn = false;
+  bool public finalized = false;
 
   address public owner;
   address public winner;
   mapping(address => uint) public bids;
+  address[] public accountsList; // so we can iterate: https://ethereum.stackexchange.com/questions/13167/are-there-well-solved-and-simple-storage-patterns-for-solidity
 
   // THINK: should be (an optional) constructor parameter?
   // For now if you want to change - simply modify the code
@@ -21,6 +22,7 @@ contract Auction {
   
 
   event Bid(address indexed winner, uint indexed price, uint indexed timestamp);
+  event Refund(address indexed sender, uint indexed amount, uint indexed timestamp);
   
   modifier onlyOwner { require(owner == msg.sender, "only owner"); _; }
   modifier onlyWinner { require(winner == msg.sender, "only winner"); _; }
@@ -51,6 +53,7 @@ contract Auction {
       bids[msg.sender] += msg.value;
     } else {
       bids[msg.sender] = msg.value;
+      accountsList.push(msg.sender); // this is out first bid, therefore adding 
     }
 
     if (initialPrice) {
@@ -69,11 +72,27 @@ contract Auction {
     emit Bid(winner, price, now);
   }
 
-  function withdraw() public ended() onlyOwner() {
-    require(withdrawn == false, "can withdraw only once");
+  function finalize() public ended() onlyOwner() {
+    require(finalized == false, "can withdraw only once");
     require(initialPrice == false, "can withdraw only if there were bids");
-    withdrawn = true; // THINK: DAO hack reentrancy - does it matter which order? (just in case setting it first)
+
+    finalized = true; // THINK: DAO hack reentrancy - does it matter which order? (just in case setting it first)
     beneficiary.send(price);
+
+    bids[winner] = 0; // setting it to zero that in the refund loop it is skipped
+    for (uint i = 0; i < accountsList.length;  i++) {
+      if (bids[accountsList[i]] > 0) {
+        accountsList[i].send( bids[accountsList[i]] ); // send? transfer? tell me baby: https://ethereum.stackexchange.com/a/38642/2524
+      }
+    }     
+  }
+
+  function refund() public {
+    require(msg.sender != winner, "winner cannot refund");
+
+    msg.sender.send( bids[msg.sender] );
+    emit Refund(msg.sender, bids[msg.sender], now);
+    bids[msg.sender] = 0;
   }
 
 }

@@ -88,16 +88,57 @@ contract('Auction', function (accounts) {
 
   it('Beneficiary should receive ETH equal to winning bid', async function() {
     await auction.sendTransaction({ value: 1e18, from: bidderA });
-    await expectThrow(auction.withdraw({ from: owner })); // cannot withdraw before the end
+    await expectThrow(auction.finalize({ from: owner })); // cannot withdraw before the end
    
     increaseTime(duration + 1);
 
     var balanceBefore = web3.eth.getBalance(beneficiary).toNumber()
-    await auction.withdraw({ from: owner });
+    await auction.finalize({ from: owner });
     var balanceAfter = web3.eth.getBalance(beneficiary).toNumber()
     assert.equal(balanceBefore + 1e18, balanceAfter, "beneficiary didn't receive correct amount")
     
-    await expectThrow(auction.withdraw({ from: owner })); // cannot withdraw more than once
+    await expectThrow(auction.finalize({ from: owner })); // cannot withdraw more than once
+  });  
+
+  it('Other guys should get a refund ', async function() {
+    await auction.sendTransaction({ value: 1e18, from: bidderA });
+    await auction.sendTransaction({ value: 1.5e18, from: bidderB });
+    await auction.sendTransaction({ value: 2e18, from: bidderC });
+
+    increaseTime(duration + 1);
+
+    var balanceBeforeA = web3.eth.getBalance(bidderA).toNumber()
+    var balanceBeforeB = web3.eth.getBalance(bidderB).toNumber()
+    var balanceBeforeC = web3.eth.getBalance(bidderC).toNumber()
+    var balanceBeforeBen = web3.eth.getBalance(beneficiary).toNumber()
+
+    await auction.finalize({ from: owner });
+
+    var balanceAfterA = web3.eth.getBalance(bidderA).toNumber()
+    var balanceAfterB = web3.eth.getBalance(bidderB).toNumber()
+    var balanceAfterC = web3.eth.getBalance(bidderC).toNumber()
+    var balanceAfterBen = web3.eth.getBalance(beneficiary).toNumber()
+
+    assert.equal(balanceBeforeA + 1e18, balanceAfterA, "bidder A didn't receive correct refund")
+    assert.equal(balanceBeforeB + 1.5e18, balanceAfterB, "bidder B didn't receive correct refund")
+    assert.equal(balanceBeforeC, balanceAfterC, "bidder C should not receive any (he is the winner)")
+    assert.equal(balanceBeforeBen + 2e18, balanceAfterBen, "beneficiary receive correct refund")
+  });
+
+  it('Should be able to withdraw', async function() {
+    await auction.sendTransaction({ value: 1e18, from: bidderA });
+    await auction.sendTransaction({ value: 1.25e18, from: bidderB });
+
+    var balanceBeforeA = web3.eth.getBalance(bidderA).toNumber()
+    await auction.refund({ from: bidderA })
+    var balanceAfterA = web3.eth.getBalance(bidderA).toNumber()
+    assert.closeTo(balanceBeforeA + 1e18, balanceAfterA, 0.01 * 1e18, "bidder A didn't receive correct refund"); // closeTo because of the gas fees
+  });
+
+
+  it('Should NOT be able to withdraw if the highest bidder', async function() {
+    await auction.sendTransaction({ value: 1e18, from: bidderA });
+    await expectThrow( auction.refund({ from: bidderA }) );  
   });
 
 
