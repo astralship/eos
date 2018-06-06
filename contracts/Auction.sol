@@ -7,25 +7,24 @@ contract Auction {
   uint public price;
   bool public initialPrice = true; // at first asking price is OK, then +25% required
   uint public timestampEnd;
+  address public beneficiary;
+  bool public withdrawn = false;
+
   address public owner;
   address public winner;
   mapping(address => uint) public bids;
 
-  // TODO - expand time factor
-  // a) 24 hours or less before the end
-  // b) 4 hours the expansion
-
+  // THINK: should be (an optional) constructor parameter?
+  // For now if you want to change - simply modify the code
   uint public increaseTimeIfBidBeforeEnd = 24 * 60 * 60; // Naming things: https://www.instagram.com/p/BSa_O5zjh8X/
   uint public increaseTimeBy = 24 * 60 * 60;
-
-
+  
 
   event Bid(address indexed winner, uint indexed price, uint indexed timestamp);
-
   
   modifier onlyOwner { require(owner == msg.sender, "only owner"); _; }
   modifier onlyWinner { require(winner == msg.sender, "only winner"); _; }
-  modifier ended { require(timestampEnd > now, "not ended yet"); _; }
+  modifier ended { require(now > timestampEnd, "not ended yet"); _; }
 
   function setDescription(string _description) public onlyOwner() {
     description = _description;
@@ -35,15 +34,17 @@ contract Auction {
     instructions = _instructions;
   }
 
-  constructor(uint _price, string _description, uint _timestampEnd) public {
+  constructor(uint _price, string _description, uint _timestampEnd, address _beneficiary) public {
     require(_timestampEnd > now, "end of the auction must be in the future");
     owner = msg.sender;
     price = _price;
     description = _description;
     timestampEnd = _timestampEnd;
+    beneficiary = _beneficiary;
   }
 
   function() public payable {
+    // TODO: empty send to withdraw
     require(now < timestampEnd, "auction has ended");
 
     if (bids[msg.sender] > 0) { // First we add the bid to an existing bid
@@ -68,12 +69,11 @@ contract Auction {
     emit Bid(winner, price, now);
   }
 
-  function withdraw() public {
-    
-  }
-
-  function withdrawBeneficiary() public ended() onlyOwner() {
-
+  function withdraw() public ended() onlyOwner() {
+    require(withdrawn == false, "can withdraw only once");
+    require(initialPrice == false, "can withdraw only if there were bids");
+    withdrawn = true; // THINK: DAO hack reentrancy - does it matter which order? (just in case setting it first)
+    beneficiary.send(price);
   }
 
 }
