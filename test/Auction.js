@@ -8,11 +8,12 @@ contract('Auction', function (accounts) {
   let bidderB = accounts[2]
   let bidderC = accounts[3]
   
+  let duration = 3600;
   let auction;
   let timestampEnd
 
   beforeEach(async function() {
-    timestampEnd = web3.eth.getBlock('latest').timestamp  + 3600; // 1 hour from now
+    timestampEnd = web3.eth.getBlock('latest').timestamp  +  duration; // 1 hour from now
     auction = await Auction.new(1e18, "item", timestampEnd, {from: owner});
   });
 
@@ -21,7 +22,6 @@ contract('Auction', function (accounts) {
     assert.equal(await auction.description(), "item", 'The description is not set correctly')
     assert.equal(await auction.timestampEnd(), timestampEnd, 'The endtime is not set correctly')
   })  
-
 
   it('Should be able to send a bid above the initial price', async function() {
     await auction.sendTransaction({ value: 1e18, from: bidderA });
@@ -34,8 +34,8 @@ contract('Auction', function (accounts) {
   })
 
   it('Should not be able to send a bid after the end of auction', async function() {
-    increaseTime(3700);
-    await expectThrow(auction.sendTransaction({ value: 0.5e18, from: bidderA }));
+    increaseTime(duration + 1);
+    await expectThrow(auction.sendTransaction({ value: 1e18, from: bidderA }));
   })  
 
   it('Should be able to outbid', async function() {
@@ -63,7 +63,7 @@ contract('Auction', function (accounts) {
   it('Winner should be able to set delivery instructions', async function() {
     await auction.sendTransaction({ value: 1e18, from: bidderA });
     increaseTime(3700);
-    await expectThrow(auction.setDelivery("whitehouse", {from: bidderB }));
+    await expectThrow(auction.setInstructions("whitehouse", {from: bidderB }));
     await auction.setInstructions("whitehouse", {from: bidderA });
     assert.equal(await auction.instructions(), "whitehouse", "Delivery instructions not set up correctly");
   });

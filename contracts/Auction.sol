@@ -15,21 +15,23 @@ contract Auction {
   // a) 24 hours or less before the end
   // b) 4 hours the expansion
 
+  uint public increaseTimeIfBidBeforeEnd = 24 * 60 * 60; // Naming things: https://www.instagram.com/p/BSa_O5zjh8X/
+  uint public increaseTimeBy = 24 * 60 * 60;
 
-  
+
 
   event Bid(address indexed winner, uint indexed price, uint indexed timestamp);
 
   
-  modifier onlyOwner { require(owner == msg.sender); _; }
-  modifier onlyWinner { require(winner == msg.sender); _; }
+  modifier onlyOwner { require(owner == msg.sender, "only owner"); _; }
+  modifier onlyWinner { require(winner == msg.sender, "only winner"); _; }
   modifier ended { require(timestampEnd > now, "not ended yet"); _; }
 
   function setDescription(string _description) public onlyOwner() {
     description = _description;
   }
 
-  function setDelivery(string _instructions) public ended() onlyWinner()  {
+  function setInstructions(string _instructions) public ended() onlyWinner()  {
     instructions = _instructions;
   }
 
@@ -42,6 +44,8 @@ contract Auction {
   }
 
   function() public payable {
+    require(now < timestampEnd, "auction has ended");
+
     if (bids[msg.sender] > 0) { // First we add the bid to an existing bid
       bids[msg.sender] += msg.value;
     } else {
@@ -54,13 +58,21 @@ contract Auction {
       require(bids[msg.sender] >= (price * 5 / 4), "big too low, minimum 25% increment");
     }
     
+    if (now > timestampEnd - increaseTimeIfBidBeforeEnd) {
+      timestampEnd = now + increaseTimeBy;
+    }
+
     initialPrice = false;
     price = bids[msg.sender];
     winner = msg.sender;
     emit Bid(winner, price, now);
   }
 
-  function redeem() public ended() onlyOwner() {
+  function withdraw() public {
+    
+  }
+
+  function withdrawBeneficiary() public ended() onlyOwner() {
 
   }
 
