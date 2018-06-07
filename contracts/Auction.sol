@@ -62,9 +62,9 @@ contract Auction {
     }
 
     if (initialPrice) {
-      require(bids[msg.sender] >= price, "big too low, minimum is the initial price");
+      require(bids[msg.sender] >= price, "bid too low, minimum is the initial price");
     } else {
-      require(bids[msg.sender] >= (price * 5 / 4), "big too low, minimum 25% increment");
+      require(bids[msg.sender] >= (price * 5 / 4), "bid too low, minimum 25% increment");
     }
     
     if (now > timestampEnd - increaseTimeIfBidBeforeEnd) {
