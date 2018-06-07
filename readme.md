@@ -2,6 +2,7 @@ This is my first contract I wrote from start to finish, not using copy-paste met
 
 I'm grateful for **Kleros** and their IICO model that motivated me to level up my coding skills. You can view my commits to their smart contract code [here](https://github.com/kleros/openiico-contract/commits?author=stefek99).
 
+<!---
 ### Simple auction contract
 
 Because I want to sell something, namely EOS whitepaper signed by Ian Griggs.
@@ -9,13 +10,14 @@ Because I want to sell something, namely EOS whitepaper signed by Ian Griggs.
 I've figured out how to run the Docker  on my Mac but before I achieve a certain level of proficiency in working with EOS it will take a while.
 
 *(chances are it will take you some time as well to figure out how to securely transact on the EOS blockchain)*
+-->
 
 ### Front-end Dapp
 
-Not yet.
-Send ETH directly.
-To refund - send empty transaction.
-To view state of the contract - use Etherscan.
+* Not yet.
+* Send ETH directly.
+* To refund - send `0 ether` transaction.
+* To view state of the contract - use Etherscan.
 
 ### Automatic refund at the end
 
