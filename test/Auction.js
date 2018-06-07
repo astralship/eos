@@ -141,6 +141,14 @@ contract('Auction', function (accounts) {
     await expectThrow( auction.refund({ from: bidderA }) );  
   });
 
+  it('Should be able to withdraw via fallback function', async function() {
+    await auction.sendTransaction({ value: 1e18, from: bidderA });
+    await auction.sendTransaction({ value: 1.25e18, from: bidderB });
 
+    var balanceBeforeA = web3.eth.getBalance(bidderA).toNumber()
+    await auction.sendTransaction({ value: 0, from: bidderA })
+    var balanceAfterA = web3.eth.getBalance(bidderA).toNumber()
+    assert.closeTo(balanceBeforeA + 1e18, balanceAfterA, 0.01 * 1e18, "bidder A didn't receive correct refund"); // closeTo because of the gas fees
+  });
   
 });

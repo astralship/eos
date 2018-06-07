@@ -1,23 +1,21 @@
+This is my first contract I wrote from start to finish, not using copy-paste method.
+
+I'm grateful for **Kleros** and their IICO model that motivated me to level up my coding skills. You can view my commits to their smart contract code [here](https://github.com/kleros/openiico-contract/commits?author=stefek99).
+
 ### Simple auction contract
 
-Because I want to sell something, namely EOS whitepaper.
+Because I want to sell something, namely EOS whitepaper signed by Ian Griggs.
 
-I've figured out how to run the Docker installation on my Mac but before I achieve a certain level of proficiency it will take a while.
+I've figured out how to run the Docker  on my Mac but before I achieve a certain level of proficiency in working with EOS it will take a while.
 
-
-
-
-
-Auction seems like the best  contract seems like the best 
-
+*(chances are it will take you some time as well to figure out how to securely transact on the EOS blockchain)*
 
 ### Front-end Dapp
 
-Work in progress.
-Currently calling smart contract methods directly.
-
-### Refund during the auction
-
+Not yet.
+Send ETH directly.
+To refund - send empty transaction.
+To view state of the contract - use Etherscan.
 
 ### Automatic refund at the end
 
@@ -29,9 +27,28 @@ Realistically, even if I pay the gas fees - it won't be that much.
 
 Note the aligned incentives - `beneficiary` wants to receive ETH therefore chances are the bidders will receive their money.
 
-Think: anyone to call the finalize function?
+
+### Tests
+
+Aiming for 100% coverage.
+
+`truffle test`
 
 
 ### TODO THINK
 
-* Can buyerA outbid buyerA? (does it make any sense)
+* Anyone to call the `finalize` function?
+
+* Can `buyerA` outbid `buyerA`? Does it make any sense in terms of game theory incentives? Pay extra 25% to extend the auction? It's not me to judge, it could be a valid motivation perhaps.
+
+### Security
+
+Please don't [hack](https://ethernaut.zeppelin.solutions/).
+
+Please don't [kill](https://github.com/paritytech/parity/issues/6995).
+
+Be kind - open an issue, submit a pull request.
+
+![](https://raw.githubusercontent.com/astralship/auction-ethereum/master/owasp.png)
+
+Bounty paid in [MAIL](https://mailhustle.com/) tokens.

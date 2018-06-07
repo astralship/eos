@@ -46,8 +46,13 @@ contract Auction {
   }
 
   function() public payable {
-    // TODO: empty send to withdraw
-    require(now < timestampEnd, "auction has ended");
+
+    if (msg.value == 0) { // when sending `0` it acts as if it was `withdraw`
+      refund();
+      return;
+    }
+
+    require(now < timestampEnd, "auction has ended"); // sending ether only allowed before the end
 
     if (bids[msg.sender] > 0) { // First we add the bid to an existing bid
       bids[msg.sender] += msg.value;
@@ -83,6 +88,7 @@ contract Auction {
     for (uint i = 0; i < accountsList.length;  i++) {
       if (bids[accountsList[i]] > 0) {
         accountsList[i].send( bids[accountsList[i]] ); // send? transfer? tell me baby: https://ethereum.stackexchange.com/a/38642/2524
+        bids[accountsList[i]] = 0; // in case someone calls `refund` again
       }
     }     
   }
