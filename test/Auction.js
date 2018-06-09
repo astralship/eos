@@ -113,6 +113,7 @@ contract('Auction', function (accounts) {
     var balanceBeforeBen = web3.eth.getBalance(beneficiary).toNumber()
 
     await auction.finalize({ from: owner });
+    await auction.refundContributors({ from: owner });
 
     var balanceAfterA = web3.eth.getBalance(bidderA).toNumber()
     var balanceAfterB = web3.eth.getBalance(bidderB).toNumber()

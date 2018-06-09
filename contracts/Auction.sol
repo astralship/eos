@@ -81,9 +81,11 @@ contract Auction {
     require(finalized == false, "can withdraw only once");
     require(initialPrice == false, "can withdraw only if there were bids");
 
-    finalized = true; // THINK: DAO hack reentrancy - does it matter which order? (just in case setting it first)
-    beneficiary.send(price);
+    finalized = true;
+    beneficiary.transfer(price);
+  }
 
+  function refundContributors() public ended() onlyOwner() {
     bids[winner] = 0; // setting it to zero that in the refund loop it is skipped
     for (uint i = 0; i < accountsList.length;  i++) {
       if (bids[accountsList[i]] > 0) {
@@ -91,8 +93,8 @@ contract Auction {
         bids[accountsList[i]] = 0;
         accountsList[i].transfer(refundValue); 
       }
-    }     
-  }
+    }
+  }   
 
   function refund() public {
     require(msg.sender != winner, "winner cannot refund");
