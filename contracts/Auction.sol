@@ -87,8 +87,9 @@ contract Auction {
     bids[winner] = 0; // setting it to zero that in the refund loop it is skipped
     for (uint i = 0; i < accountsList.length;  i++) {
       if (bids[accountsList[i]] > 0) {
-        accountsList[i].send( bids[accountsList[i]] ); // send? transfer? tell me baby: https://ethereum.stackexchange.com/a/38642/2524
-        bids[accountsList[i]] = 0; // in case someone calls `refund` again
+        uint refundValue = bids[accountsList[i]];
+        bids[accountsList[i]] = 0;
+        accountsList[i].transfer(refundValue); 
       }
     }     
   }
