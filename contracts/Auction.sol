@@ -95,10 +95,13 @@ contract Auction {
 
   function refund() public {
     require(msg.sender != winner, "winner cannot refund");
+    require(bids[msg.sender] > 0, "refunds only allowed if you sent something");
 
-    msg.sender.send( bids[msg.sender] );
-    emit Refund(msg.sender, bids[msg.sender], now);
-    bids[msg.sender] = 0;
+    uint refundValue = bids[msg.sender];
+    bids[msg.sender] = 0; // reentrancy fix, setting to zero first
+    msg.sender.transfer(refundValue);
+    
+    emit Refund(msg.sender, refundValue, now);
   }
 
 }

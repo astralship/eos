@@ -125,6 +125,12 @@ contract('Auction', function (accounts) {
     assert.equal(balanceBeforeBen + 2e18, balanceAfterBen, "beneficiary receive correct refund")
   });
 
+  it('Should fail if some random guy wants a refund', async function() {
+    await auction.sendTransaction({ value: 1e18, from: bidderA });
+    increaseTime(duration + 1);
+    await expectThrow(auction.refund({ from: bidderB })); 
+  });
+
   it('Should be able to withdraw', async function() {
     await auction.sendTransaction({ value: 1e18, from: bidderA });
     await auction.sendTransaction({ value: 1.25e18, from: bidderB });
