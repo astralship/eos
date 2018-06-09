@@ -2,7 +2,22 @@
 <html>
   <head>
     <meta charset="UTF-8">
-    <title>EOS auction - support astralship.org</title>
+    <title>EOS whitepaper auction - support astralship.org</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <meta property="og:title" content="EOS whitepaper auction - support astralship.org"/>
+    <meta property="og:image" content="https://genesis.re/flower.jpg""/>
+    <meta property="og:site_name" content="Architecting the new world"/>
+    <meta property="og:description" content="Using mailhustle.com to benefit from your own data."/>
+
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:site" content="@theastralship">
+    <meta name="twitter:creator" content="@theastralship">
+    <meta name="twitter:title" content="EOS whitepaper auction - support astralship.org">
+    <meta name="twitter:description" content="Architecting the new world. Using mailhustle.com to benefit from your own data.">
+    <meta name="twitter:image" content="https://genesis.re/flower.jpg">
+
+
     <style>
       html, body {
         margin: 0;
@@ -16,38 +31,79 @@
         padding: 20px;
       }
 
+      /* https://css-tricks.com/NetMag/FluidWidthVideo/Article-FluidWidthVideo.php */ 
+
+      @media (max-width: 600px) {
+        .videoWrapper {
+          position: relative;
+          padding-bottom: 56.25%;
+          padding-top: 25px;
+          height: 0;
+        }
+        .videoWrapper iframe {
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+        }
+      }
+
+      .address {
+        font-family: monospace;
+        font-size: 1.4em;
+        width: 460px;
+        padding: 8px;
+        border-radius: 7px;       
+        max-width: calc(95vw); 
+        color: black;
+      }
+
     </style>
   </head>
   <body>
-    <h1>EOS auction on Ethereum</h1>
-    <p>Benefit <a href="https://astralship.org">astralship.org</a> #spacepirates #astralhackers</p>
+    <h1>EOS whitepaper auction on Ethereum</h1>
+    <h1>Benefit <a href="https://astralship.org">astralship.org</a></h1>
     <p>EOS blockchain is not quite production ready yet... :)</p>
-    <p>That's why using Ethereum but don't despair, we have <a href="https://eosio.stackexchange.com/a/694/1516">EOS running on Docker</a>.
-
-    <iframe width="560" height="315" src="https://www.youtube.com/embed/xbuPs3682bU" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
-
-
-    <h2>Starting price 1 wei, 25% minimum increment</h2>
+    <p>That's why using Ethereum but don't despair, we have <a href="https://eosio.stackexchange.com/a/694/1516">EOS running on Docker</a>.</p>
+    <p>Proceeds from the auction are going directly to our development fund...</p>
 
 
+    <input class="address" readonly value="0x3280660B3bAfDAD41A774938Ab5A34Ae463EdbFe"> <br>
 
-    <img src="eos-astralship.jpg">
+    <p>Verify on Etherscan: <a href="https://etherscan.io/address/0x3280660B3bAfDAD41A774938Ab5A34Ae463EdbFe#code">etherscan.io/address/0x3280660B3bAfDAD41A774938Ab5A34Ae463EdbFe#code</a></p>
 
-    <img src="eos-whitepaper.jpg">
+    <p>Peer reviewed on GitHub: <a href="https://github.com/astralship/eos/blob/master/contracts/Auction.sol">https://github.com/astralship/eos/blob/master/contracts/Auction.sol</a></p>
+
+    <br>
+    <br>
+
+    <div class="videoWrapper">
+      <iframe width="560" height="315" src="https://www.youtube.com/embed/xbuPs3682bU" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+    </div>
 
 
+    <h2>How it works</h2>
+    <ul>
+      <li>Starting price 1 wei, 25% minimum increment.</li>
+      <li>Bidding 24 hours before the end increases to 24 hours.</li>
+      <li>This is to accomodate all the timezones</li>
+      <li>Non-winning bids are automatically refunded<br>
+      <i>(we don't want to keep your ether hostage)</i></li>
+      <li>Don't send directly from exchanges, use a wallet that you have control over the private keys<br>
+      <i>(otherwise you will not be refunded)</i></li>
+      <li>Dapp front-end to the auction hasn't been built yet, use <a href="https://etherscan.io/address/0x3280660B3bAfDAD41A774938Ab5A34Ae463EdbFe#code">Etherscan</a> to read the values from the contact.
+    </ul>
 
-    <h2>Verified on Etherscan</h2>
+    <img src="eos-whitepaper.jpg" style="max-width: 100%">
 
-    <a href="https://etherscan.io/address/0x3280660b3bafdad41a774938ab5a34ae463edbfe#code">etherscan.io/address/0x3280660b3bafdad41a774938ab5a34ae463edbfe#code</a>
+    <img src="eos-astralship.jpg" style="max-width: 100%">
 
-
-
-    <h2>Source code on GitHub</h2>
-
-    <a href="https://github.com/astralship/eos/blob/master/contracts/Auction.sol">https://github.com/astralship/eos/blob/master/contracts/Auction.sol</a>
     
-      
+
+    <h2>Support us directly</h2>
+
+    <p>Visit our main website: <a href="https://astralship.org/kickstarter">astralship.org/kickstarter</a>
 
   
   </body>
