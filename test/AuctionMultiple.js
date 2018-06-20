@@ -29,10 +29,33 @@ contract('AuctionMultiple', function (accounts) {
 
   it('Should set HEAD and TAIL bids', async function() {
     var head = await auction.bids.call(0);
-    console.log(head);
-    assert.equal(true, false);
+    var address0 = "0x0000000000000000000000000000000000000000";
+    assert.equal(head[3], address0);
+  });
+
+  it('Should accept a bid from a guy', async function() {
+    await auction.sendTransaction({ value: 1e18, from: bidderA });
+
+    var newBid = await auction.bids.call(1);
+
+    console.log(newBid);
+
+    assert.equal(newBid[2].toNumber(), 1e18);
   });
 
 
 
 });
+
+
+// BigNumber {
+//     s: 1,
+//     e: 77,
+//     c:
+//      [ 11579208,
+//        92373161954235,
+//        70985008687907,
+//        85326998466564,
+//        5640394575840,
+//        7913129639935 ] },
+//   BigNumber { s: 1, e: 18, c: [ 10000 ] }

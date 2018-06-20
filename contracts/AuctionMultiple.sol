@@ -7,7 +7,7 @@ import "./Auction.sol";
 contract AuctionMultiple is Auction {
 
 
-  uint constant HEAD = uint(-1); // really big number
+  uint constant HEAD = 120000000 * 1e18; // uint(-1); // really big number
   uint constant TAIL = 0;
   uint public lastBidID = 0;
   uint private TEMP = 0; // need to use it when creating new struct
@@ -24,7 +24,7 @@ contract AuctionMultiple is Auction {
     
   uint public howMany; // number of items to sell, for isntance 40k tickets to a concert
 
-  event LogNumber(uint number);
+  //event LogNumber(uint number);
   
   constructor(uint _price, string _description, uint _timestampEnd, address _beneficiary, uint _howMany) Auction(_price, _description, _timestampEnd, _beneficiary) public {
     howMany = _howMany;
@@ -42,7 +42,7 @@ contract AuctionMultiple is Auction {
         contributor: address(0)
     });    
 
-    emit LogNumber(HEAD);
+    //emit LogNumber(HEAD);
   }
 
   function() public payable {
