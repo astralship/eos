@@ -25,6 +25,14 @@ contract('AuctionMultiple', function (accounts) {
     assert.equal(await auction.timestampEnd(), timestampEnd, 'The endtime is not set correctly')
     assert.equal(await auction.beneficiary(), beneficiary, 'The beneficiary is not set correctly')
     assert.equal(await auction.howMany(), 5, 'The beneficiary is not set correctly')
-  })  
+  });
+
+  it('Should set HEAD and TAIL bids', async function() {
+    var head = await auction.bids.call(0);
+    console.log(head);
+    assert.equal(true, false);
+  });
+
+
 
 });

@@ -43,6 +43,12 @@ Aiming for 100% coverage.
 
 * Can `buyerA` outbid `buyerA`? Does it make any sense in terms of game theory incentives? Pay extra 25% to extend the auction? It's not me to judge, it could be a valid motivation perhaps.
 
+* Starting time!
+
+
+### Multiple auction
+
+
 ### Security
 
 Please don't [hack](https://ethernaut.zeppelin.solutions/).

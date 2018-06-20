@@ -21,7 +21,7 @@ contract Auction {
   uint public increaseTimeBy = 24 * 60 * 60;
   
 
-  event Bid(address indexed winner, uint indexed price, uint indexed timestamp);
+  event BidEvent(address indexed winner, uint indexed price, uint indexed timestamp); // cannot have event and struct with the same name
   event Refund(address indexed sender, uint indexed amount, uint indexed timestamp);
   
   modifier onlyOwner { require(owner == msg.sender, "only owner"); _; }
@@ -74,7 +74,7 @@ contract Auction {
     initialPrice = false;
     price = bids[msg.sender];
     winner = msg.sender;
-    emit Bid(winner, price, now);
+    emit BidEvent(winner, price, now);
   }
 
   function finalize() public ended() onlyOwner() {
