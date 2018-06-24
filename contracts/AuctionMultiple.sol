@@ -73,14 +73,15 @@ contract AuctionMultiple is Auction {
           ++lastBidID;
           
           bids[lastBidID] = Bid({
-            value: msg.value,
-            contributor: msg.sender,
             prev: TEMP,
-            next: TEMP
+            next: TEMP,
+            value: msg.value,
+            contributor: msg.sender
           });
 
           Bid storage myBid = bids[lastBidID];
 
+          // TOOD / THINK: refactor so that we search first and only then set storage
           insertionBidId = searchInsertionPoint(myBid.value, TAIL);
 
           myBid.prev = insertionBidId;
