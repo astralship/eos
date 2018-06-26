@@ -114,6 +114,32 @@ contract('AuctionMultiple', function (accounts) {
     assert.equal(tailBid[1].toNumber(), newBidId1);
   });  
 
+  it('Should allow an increasing bid', async function() {
+    let moar = 1.1e18;
+    await auction.sendTransaction({ value: contribution1, from: bidderA });
+    await auction.sendTransaction({ value: contribution2, from: bidderB });
+    await auction.sendTransaction({ value: moar, from: bidderA });
+
+    var newBid1 = await auction.bids.call(newBidId1);
+    var newBid2 = await auction.bids.call(newBidId2);
+    var headBid = await auction.bids.call(headBidId);
+    var tailBid = await auction.bids.call(tailBidId);
+
+    assert.equal(newBid1[0].toNumber(), newBidId2);
+    assert.equal(newBid1[1].toNumber(), headBidId);
+    assert.equal(newBid1[2].toNumber(), contribution1 + moar);    
+
+    assert.equal(newBid2[0].toNumber(), tailBidId);
+    assert.equal(newBid2[1].toNumber(), newBidId1);
+    assert.equal(newBid2[2].toNumber(), contribution2);
+
+    assert.equal(headBid[0].toNumber(), newBidId1);
+    assert.equal(headBid[1].toNumber(), tailBidId);
+
+    assert.equal(tailBid[0].toNumber(), headBidId);
+    assert.equal(tailBid[1].toNumber(), newBidId2);
+  });
+
 
 
 });

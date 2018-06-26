@@ -132,16 +132,16 @@ contract AuctionMultiple is Auction {
   //   submitBid(_maxValuation, search(_maxValuation,_next));
   // }
 
-  // We are always starting from TAIL and going upwards
+  // We are  starting from TAIL and going upwards
   // This is to simplify the case of increasing bids (can go upwards, cannot go lower)
   // NOTE: blockSize gas limit in case of so many bids (wishful thinking)
   function searchInsertionPoint(uint _contribution, uint _startSearch) view public returns (uint) {
     require(_contribution > bids[_startSearch].value, "your contribution and _startSearch does not make sense, it will search in a wrong direction");
 
-    Bid storage lowerBid = bids[_startSearch];
-    Bid storage higherBid;
+    Bid memory lowerBid = bids[_startSearch];
+    Bid memory higherBid;
 
-    while(true) { 
+    while(true) { // it is guaranteed to stop as we set the HEAD bid with very high maximum valuation
       higherBid = bids[lowerBid.next];
 
       if (higherBid.value > _contribution) {
