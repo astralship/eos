@@ -24,7 +24,8 @@ contract AuctionMultiple is Auction {
     
   uint public howMany; // number of items to sell, for isntance 40k tickets to a concert
 
-  //event LogNumber(uint number);
+  event LogNumber(uint number);
+  event LogText(string text);
   
   constructor(uint _price, string _description, uint _timestampEnd, address _beneficiary, uint _howMany) Auction(_price, _description, _timestampEnd, _beneficiary) public {
     howMany = _howMany;
@@ -55,22 +56,27 @@ contract AuctionMultiple is Auction {
       
 
       if (myBidId > 0) { // sender has already placed bid, we increase the existing one
+          
           Bid storage existingBid = bids[myBidId];
           existingBid.value = existingBid.value + msg.value;
           if (existingBid.value > bids[existingBid.next].value) { // else do nothing (we are lower than the next one)
             insertionBidId = searchInsertionPoint(existingBid.value, existingBid.next);
+            emit LogNumber(insertionBidId);
+
+            bids[existingBid.prev].next = existingBid.next;
+            bids[existingBid.next].prev = existingBid.prev;
 
             existingBid.prev = insertionBidId;
             existingBid.next = bids[insertionBidId].next;
 
+            bids[ bids[insertionBidId].next ].prev = myBidId;
             bids[insertionBidId].next = myBidId;
-            bids[existingBid.next].prev = lastBidID;
-
-
           } 
 
       } else { // bid from this guy does not exist, create a new one
           ++lastBidID;
+
+          contributors[msg.sender] = lastBidID;
           
           bids[lastBidID] = Bid({
             prev: TEMP,
