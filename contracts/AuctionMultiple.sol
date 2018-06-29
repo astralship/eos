@@ -13,10 +13,10 @@ contract AuctionMultiple is Auction {
   uint private TEMP = 0; // need to use it when creating new struct
  
   struct Bid {
-      uint prev;            // bidID of the previous element.
-      uint next;            // bidID of the next element.
-      uint value;
-      address contributor;  // The contributor who placed the bid.
+    uint prev;            // bidID of the previous element.
+    uint next;            // bidID of the next element.
+    uint value;
+    address contributor;  // The contributor who placed the bid.
   }    
 
   mapping (uint => Bid) public bids; // Map bidID to bid
@@ -26,6 +26,7 @@ contract AuctionMultiple is Auction {
 
   event LogNumber(uint number);
   event LogText(string text);
+  event LogAddress(address addr);
   
   constructor(uint _price, string _description, uint _timestampEnd, address _beneficiary, uint _howMany) Auction(_price, _description, _timestampEnd, _beneficiary) public {
     howMany = _howMany;
@@ -61,7 +62,6 @@ contract AuctionMultiple is Auction {
           existingBid.value = existingBid.value + msg.value;
           if (existingBid.value > bids[existingBid.next].value) { // else do nothing (we are lower than the next one)
             insertionBidId = searchInsertionPoint(existingBid.value, existingBid.next);
-            emit LogNumber(insertionBidId);
 
             bids[existingBid.prev].next = existingBid.next;
             bids[existingBid.next].prev = existingBid.prev;
@@ -77,66 +77,24 @@ contract AuctionMultiple is Auction {
           ++lastBidID;
 
           contributors[msg.sender] = lastBidID;
-          
+
+          insertionBidId = searchInsertionPoint(msg.value, TAIL);
+
           bids[lastBidID] = Bid({
-            prev: TEMP,
-            next: TEMP,
+            prev: insertionBidId,
+            next: bids[insertionBidId].next,
             value: msg.value,
             contributor: msg.sender
           });
 
-          Bid storage myBid = bids[lastBidID];
-
-          // TOOD / THINK: refactor so that we search first and only then set storage
-          insertionBidId = searchInsertionPoint(myBid.value, TAIL);
-
-          myBid.prev = insertionBidId;
-          myBid.next = bids[insertionBidId].next;
-
+          bids[ bids[insertionBidId].next ].prev = lastBidID;
           bids[insertionBidId].next = lastBidID;
-          bids[myBid.next].prev = lastBidID;
       }
 
 
     }
         
   }
-
-  // function submitBid(uint _maxValuation, uint _next) public payable {
-  //   Bid storage nextBid = bids[_next];
-  //   uint prev = nextBid.prev;
-  //   Bid storage prevBid = bids[prev];
-  //   require(_maxValuation >= prevBid.maxValuation && _maxValuation < nextBid.maxValuation); // The new bid maxValuation is higher than the previous one and strictly lower than the next one.
-  //   require(now >= startTime && now < endTime); // Check that the bids are still open.
-
-  //   ++lastBidID; // Increment the lastBidID. It will be the new bid's ID.
-  //   // Update the pointers of neighboring bids.
-  //   prevBid.next = lastBidID;
-  //   nextBid.prev = lastBidID;
-
-  //   // Insert the bid.
-  //   bids[lastBidID] = Bid({
-  //       prev: prev,
-  //       next: _next,
-  //       maxValuation: _maxValuation,
-  //       contrib: msg.value,
-  //       bonus: bonus(),
-  //       contributor: msg.sender,
-  //       withdrawn: false,
-  //       redeemed: false
-  //   });
-
-  //   // Add the bid to the list of bids by this contributor.
-  //   contributorBidIDs[msg.sender].push(lastBidID);
-
-  //   // Emit event
-  //   emit BidSubmitted(msg.sender, lastBidID, now);
-  // }
-
-
-  // function searchAndBid(uint _maxValuation, uint _next) public payable {
-  //   submitBid(_maxValuation, search(_maxValuation,_next));
-  // }
 
   // We are  starting from TAIL and going upwards
   // This is to simplify the case of increasing bids (can go upwards, cannot go lower)
@@ -158,6 +116,24 @@ contract AuctionMultiple is Auction {
     }
   }
 
+  function getPosition(address addr) view public returns(uint) {
+    uint bidId = contributors[addr];
+    require(bidId != 0, "cannot ask for a position of a guy who is not on the list");
+    uint position = 1;
+
+    Bid memory currentBid = bids[HEAD];
+
+    while (currentBid.prev != bidId) {
+      currentBid = bids[currentBid.prev];
+      position++;
+    }
+    return position;
+  }
+
+  // shorthand for calling without parameters
+  function getPosition() view public returns(uint) {
+    return getPosition(msg.sender);
+  }
 
 
 }

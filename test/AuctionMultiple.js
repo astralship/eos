@@ -234,4 +234,48 @@ contract('AuctionMultiple', function (accounts) {
     assert.equal(tailBid[1].toNumber(), newBidId2);    
   });
 
+  it('Correctly tell position of the bids', async function() {
+    let moar = 1.1e18;
+    await auction.sendTransaction({ value: contribution1, from: bidderA });
+    await auction.sendTransaction({ value: contribution2, from: bidderB });
+    await auction.sendTransaction({ value: contribution3, from: bidderC });
+    await auction.sendTransaction({ value: moar, from: bidderA });
+
+    var pos1, pos2, pos3, post4;
+
+    pos1 = await auction.getPosition.call(bidderA);
+    pos2 = await auction.getPosition.call(bidderB);
+    pos3 = await auction.getPosition.call(bidderC);
+    await expectThrow(auction.getPosition.call(bidderD)); 
+
+
+
+    assert.equal(pos1.toNumber(), 1);
+    assert.equal(pos2.toNumber(), 2);
+    assert.equal(pos3.toNumber(), 3);
+
+    await auction.sendTransaction({ value: moar, from: bidderC });
+    // after sending now the standing is: C (1.5 + 1.1) A (1.0 + 1.1) B (2.0)
+
+    pos1 = await auction.getPosition.call(bidderA);
+    pos2 = await auction.getPosition.call(bidderB);
+    pos3 = await auction.getPosition.call(bidderC);
+    assert.equal(pos1.toNumber(), 2);
+    assert.equal(pos2.toNumber(), 3);
+    assert.equal(pos3.toNumber(), 1);
+
+    await auction.sendTransaction({ value: contribution4, from: bidderD });
+    // final bid, this time from a new guy D (2.5)
+
+    // DIFFERENT SYNTAX - anyone can call "getPosition"
+    pos1 = await auction.getPosition(bidderA, {from: owner});
+    pos2 = await auction.getPosition(bidderB, {from: owner});
+    pos3 = await auction.getPosition(bidderC, {from: owner});
+    pos4 = await auction.getPosition(bidderD, {from: owner});
+    assert.equal(pos1.toNumber(), 3);
+    assert.equal(pos2.toNumber(), 4);
+    assert.equal(pos3.toNumber(), 1);
+    assert.equal(pos4.toNumber(), 2);
+  });
+
 });
