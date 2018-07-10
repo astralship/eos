@@ -49,52 +49,57 @@ contract AuctionMultiple is Auction {
   }
 
   function() public payable {
-
     if (msg.value == 0) {
-      // TODO: withdraw
+      withdraw();
     } else {
-      uint myBidId = contributors[msg.sender];
-      uint insertionBidId;
-      
+      bid();
+    }  
+  }
 
-      if (myBidId > 0) { // sender has already placed bid, we increase the existing one
-          
-          Bid storage existingBid = bids[myBidId];
-          existingBid.value = existingBid.value + msg.value;
-          if (existingBid.value > bids[existingBid.next].value) { // else do nothing (we are lower than the next one)
-            insertionBidId = searchInsertionPoint(existingBid.value, existingBid.next);
+  function bid() public payable {
+    require(now < timestampEnd, "cannot bid after the auction ends");
 
-            bids[existingBid.prev].next = existingBid.next;
-            bids[existingBid.next].prev = existingBid.prev;
-
-            existingBid.prev = insertionBidId;
-            existingBid.next = bids[insertionBidId].next;
-
-            bids[ bids[insertionBidId].next ].prev = myBidId;
-            bids[insertionBidId].next = myBidId;
-          } 
-
-      } else { // bid from this guy does not exist, create a new one
-          ++lastBidID;
-
-          contributors[msg.sender] = lastBidID;
-
-          insertionBidId = searchInsertionPoint(msg.value, TAIL);
-
-          bids[lastBidID] = Bid({
-            prev: insertionBidId,
-            next: bids[insertionBidId].next,
-            value: msg.value,
-            contributor: msg.sender
-          });
-
-          bids[ bids[insertionBidId].next ].prev = lastBidID;
-          bids[insertionBidId].next = lastBidID;
-      }
-
-
-    }
+    uint myBidId = contributors[msg.sender];
+    uint insertionBidId;
+    
+    if (myBidId > 0) { // sender has already placed bid, we increase the existing one
         
+        Bid storage existingBid = bids[myBidId];
+        existingBid.value = existingBid.value + msg.value;
+        if (existingBid.value > bids[existingBid.next].value) { // else do nothing (we are lower than the next one)
+          insertionBidId = searchInsertionPoint(existingBid.value, existingBid.next);
+
+          bids[existingBid.prev].next = existingBid.next;
+          bids[existingBid.next].prev = existingBid.prev;
+
+          existingBid.prev = insertionBidId;
+          existingBid.next = bids[insertionBidId].next;
+
+          bids[ bids[insertionBidId].next ].prev = myBidId;
+          bids[insertionBidId].next = myBidId;
+        } 
+
+    } else { // bid from this guy does not exist, create a new one
+        //  accountsList.push[msg.sender]; // adding guy to the list so that at the end we know how to refund
+
+        require(msg.value >= price, "Not much sense sending less than the price, likely an error");
+
+        ++lastBidID;
+
+        contributors[msg.sender] = lastBidID;
+
+        insertionBidId = searchInsertionPoint(msg.value, TAIL);
+
+        bids[lastBidID] = Bid({
+          prev: insertionBidId,
+          next: bids[insertionBidId].next,
+          value: msg.value,
+          contributor: msg.sender
+        });
+
+        bids[ bids[insertionBidId].next ].prev = lastBidID;
+        bids[insertionBidId].next = lastBidID;
+    }
   }
 
   // We are  starting from TAIL and going upwards
@@ -124,7 +129,7 @@ contract AuctionMultiple is Auction {
 
     Bid memory currentBid = bids[HEAD];
 
-    while (currentBid.prev != bidId) {
+    while (currentBid.prev != bidId) { // BIG LOOP WARNING ! ! ! ! ! ! ! ! !
       currentBid = bids[currentBid.prev];
       position++;
     }
@@ -134,6 +139,10 @@ contract AuctionMultiple is Auction {
   // shorthand for calling without parameters
   function getPosition() view public returns(uint) {
     return getPosition(msg.sender);
+  }
+
+  function withdraw() public {
+    
   }
 
 

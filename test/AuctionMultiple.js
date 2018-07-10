@@ -23,13 +23,14 @@ contract('AuctionMultiple', function (accounts) {
   let newBidId3 = 3;
   let newBidId4 = 4;
 
+  let tooLittle = 0.5e18;
   let contribution1 = 1e18;
   let contribution2 = 2e18;
   let contribution3 = 1.5e18; // in between
   let contribution4 = 2.5e18;
 
   beforeEach(async function() {
-    timestampEnd = web3.eth.getBlock('latest').timestamp  +  duration; // 1 hour from now
+    timestampEnd = web3.eth.getBlock('latest').timestamp  +  duration;
     auction = await AuctionMultiple.new(1e18, "item", timestampEnd, beneficiary, 5, {from: owner});
   });
 
@@ -44,6 +45,18 @@ contract('AuctionMultiple', function (accounts) {
   it('Should set HEAD and TAIL bids', async function() {
     var head = await auction.bids.call(0);
     assert.equal(head[3], address0);
+  });
+
+  it('Should reject a bid that is too low', async function() {
+    await expectThrow( auction.sendTransaction({ value: tooLittle, from: bidderA }) );
+
+    var headBid = await auction.bids.call(headBidId);
+    assert.equal(headBid[0].toNumber(), tailBidId);
+    assert.equal(headBid[1].toNumber(), tailBidId);
+
+    var tailBid = await auction.bids.call(tailBidId);
+    assert.equal(tailBid[0].toNumber(), headBidId);
+    assert.equal(tailBid[1].toNumber(), headBidId);
   });
 
   it('Should accept a bid from a guy and set "next" "prev" correctly', async function() {

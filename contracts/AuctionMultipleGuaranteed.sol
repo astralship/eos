@@ -6,10 +6,12 @@ import "./AuctionMultiple.sol";
 
 contract AuctionMultipleGuaranteed is AuctionMultiple {
 
-  uint public howManyGuaranteed;
+  uint public howManyGuaranteed; // after guaranteed slots are used, we decrease the number of slots available
   uint public priceGuaranteed;
-  uint public howManyLeft; // after guaranteed slots are used, we decrease the number of slots available
-  mapping (address => uint) public guaranteedContributors;
+  address[] public guaranteedContributors;
+  mapping (address => uint) public guaranteedContributions; // keeping track if a certain address contirbuted
+
+  event GuaranteedBid(address addr, uint value);
   
   constructor(uint _price, string _description, uint _timestampEnd, address _beneficiary, uint _howMany, uint _howManyGuaranteed, uint _priceGuaranteed) AuctionMultiple(_price, _description, _timestampEnd, _beneficiary, _howMany) public {
     require(_howMany > _howManyGuaranteed, "The number of guaranteed items should be less than total items, otherwise impossible or fixed price sell");
@@ -20,55 +22,21 @@ contract AuctionMultipleGuaranteed is AuctionMultiple {
   }
 
   function() public payable {
-
     if (msg.value == 0) {
-      // TODO: withdraw
+      withdraw();
     } else {
-      
-      // Situation when someone has already guaranteed place and bids anyway
-      if (guaranteedContributors[msg.sender] > 0) return; // THINK: error? log? something else?
+      require(now < timestampEnd, "cannot bid after the auction ends");
+      require(guaranteedContributions[msg.sender] == 0, "already a guranteed contributor, cannot more than once");
 
-      uint myBidId = contributors[msg.sender];
-      uint insertionBidId;
-      
-      if (myBidId > 0) { // sender has already placed bid, we increase the existing one
-          
-          Bid storage existingBid = bids[myBidId];
-          existingBid.value = existingBid.value + msg.value;
-          if (existingBid.value > bids[existingBid.next].value) { // else do nothing (we are lower than the next one)
-            insertionBidId = searchInsertionPoint(existingBid.value, existingBid.next);
-
-            bids[existingBid.prev].next = existingBid.next;
-            bids[existingBid.next].prev = existingBid.prev;
-
-            existingBid.prev = insertionBidId;
-            existingBid.next = bids[insertionBidId].next;
-
-            bids[ bids[insertionBidId].next ].prev = myBidId;
-            bids[insertionBidId].next = myBidId;
-          } 
-
-      } else { // bid from this guy does not exist, create a new one
-          ++lastBidID;
-
-          contributors[msg.sender] = lastBidID;
-
-          insertionBidId = searchInsertionPoint(msg.value, TAIL);
-
-          bids[lastBidID] = Bid({
-            prev: insertionBidId,
-            next: bids[insertionBidId].next,
-            value: msg.value,
-            contributor: msg.sender
-          });
-
-          bids[ bids[insertionBidId].next ].prev = lastBidID;
-          bids[insertionBidId].next = lastBidID;
+      if (msg.value >= priceGuaranteed && howManyGuaranteed > 0) {
+        guaranteedContributors.push(msg.sender);
+        guaranteedContributions[msg.sender] = msg.value;
+        howManyGuaranteed--;
+        emit GuaranteedBid(msg.sender, msg.value);
+      } else {
+        bid();
       }
-
-
-    }
-        
+    } 
   }
 
 

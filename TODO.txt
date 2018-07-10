@@ -1,0 +1,5 @@
+// TODO: minting a NFT
+// TODO: massive loop gas limit
+// TODO: extend time 
+// TODO: store cut-off bid value ! ! ! ! ! 
+// do not allow bids that are below trehshold

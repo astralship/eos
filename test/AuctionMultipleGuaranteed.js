@@ -25,8 +25,7 @@ contract('AuctionMultipleGuaranteed', function (accounts) {
 
   let contribution1 = 1e18;
   let contribution2 = 2e18;
-  let contribution3 = 1.5e18; // in between
-  let contribution4 = 2.5e18;
+  let guaranteed = 2.5e18;
 
   beforeEach(async function() {
     timestampEnd = web3.eth.getBlock('latest').timestamp  +  duration; // 1 hour from now
@@ -41,6 +40,55 @@ contract('AuctionMultipleGuaranteed', function (accounts) {
     assert.equal(await auction.howMany(), 5, 'The beneficiary is not set correctly');
     assert.equal(await auction.howManyGuaranteed(), 3, 'The beneficiary is not set correctly');
     assert.equal(await auction.priceGuaranteed(), 2e18, 'The beneficiary is not set correctly');
+  });
+
+  it('Should accept a bid from a guy and set "next" "prev" correctly (as usual)', async function() {
+    await auction.sendTransaction({ value: contribution1, from: bidderA });
+
+    var newBid = await auction.bids.call(newBidId1);
+    assert.equal(newBid[0].toNumber(), tailBidId);
+    assert.equal(newBid[1].toNumber(), headBidId);
+    assert.equal(newBid[2].toNumber(), contribution1);
+
+    var headBid = await auction.bids.call(headBidId);
+    assert.equal(headBid[0].toNumber(), newBidId1);
+    assert.equal(headBid[1].toNumber(), tailBidId);
+
+    var tailBid = await auction.bids.call(tailBidId);
+    assert.equal(tailBid[0].toNumber(), headBidId);
+    assert.equal(tailBid[1].toNumber(), newBidId1);
+  });
+
+  it('Should accept a guaranteed bid and not move head tail', async function() {
+    await auction.sendTransaction({ value: guaranteed, from: bidderA });
+
+    var headBid = await auction.bids.call(headBidId);
+    assert.equal(headBid[0].toNumber(), tailBidId);
+    assert.equal(headBid[1].toNumber(), tailBidId);
+
+    var tailBid = await auction.bids.call(tailBidId);
+    assert.equal(tailBid[0].toNumber(), headBidId);
+    assert.equal(tailBid[1].toNumber(), headBidId);
+  });
+
+  it('Should accept a guaranteed bid and then place a regular one', async function() {
+    await auction.sendTransaction({ value: guaranteed, from: bidderA });
+    await auction.sendTransaction({ value: guaranteed, from: bidderB });
+    await auction.sendTransaction({ value: guaranteed, from: bidderC });
+    await auction.sendTransaction({ value: guaranteed, from: bidderD });
+
+    var newBid = await auction.bids.call(newBidId1);
+    assert.equal(newBid[0].toNumber(), tailBidId);
+    assert.equal(newBid[1].toNumber(), headBidId);
+    assert.equal(newBid[2].toNumber(), guaranteed);
+
+    var headBid = await auction.bids.call(headBidId);
+    assert.equal(headBid[0].toNumber(), newBidId1);
+    assert.equal(headBid[1].toNumber(), tailBidId);
+
+    var tailBid = await auction.bids.call(tailBidId);
+    assert.equal(tailBid[0].toNumber(), headBidId);
+    assert.equal(tailBid[1].toNumber(), newBidId1);
   });
 
 
