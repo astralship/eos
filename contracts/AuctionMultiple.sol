@@ -29,6 +29,7 @@ contract AuctionMultiple is Auction {
   event LogAddress(address addr);
   
   constructor(uint _price, string _description, uint _timestampEnd, address _beneficiary, uint _howMany) Auction(_price, _description, _timestampEnd, _beneficiary) public {
+    require(_howMany > 1, "This auction is suited to multiple items. With 1 item only - use different code. Or remove this 'require' - you've been warned");
     howMany = _howMany;
 
     bids[HEAD] = Bid({

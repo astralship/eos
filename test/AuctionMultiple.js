@@ -1,6 +1,6 @@
 /* eslint-disable no-undef */ // Avoid the linter considering truffle elements as undef.
 const AuctionMultiple = artifacts.require('AuctionMultiple.sol')
-const { expectThrow, increaseTime } = require('./helpers')
+const { expectThrow, increaseTime, getGasLimit, getTransaction } = require('./helpers')
 
 contract('AuctionMultiple', function (accounts) {
   let owner = accounts[0]
@@ -9,6 +9,7 @@ contract('AuctionMultiple', function (accounts) {
   let bidderC = accounts[3]
   let bidderD = accounts[4]
   let beneficiary = accounts[5]
+  let address0 = "0x0000000000000000000000000000000000000000";
   
   let day = 24 * 60 * 60;
   let duration = 3 * day; // similar amount to `increaseTimeIfBidBeforeEnd`
@@ -42,7 +43,6 @@ contract('AuctionMultiple', function (accounts) {
 
   it('Should set HEAD and TAIL bids', async function() {
     var head = await auction.bids.call(0);
-    var address0 = "0x0000000000000000000000000000000000000000";
     assert.equal(head[3], address0);
   });
 
@@ -277,5 +277,19 @@ contract('AuctionMultiple', function (accounts) {
     assert.equal(pos3.toNumber(), 1);
     assert.equal(pos4.toNumber(), 2);
   });
+
+  
+  // SOME NEW LESSONS LEARNT: https://github.com/kleros/openiico-contract/pull/30#issuecomment-402139640
+
+  // it('Should ran out of gas when limit is very small', async function() {
+
+  //   var limit = await getGasLimit();
+
+  //   console.log(limit);
+
+  //   for (let i=0; i<10; i++) {
+  //       await auction.sendTransaction({ value: i * 1e18, from: accounts[i] });
+  //   }
+  // });
 
 });

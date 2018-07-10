@@ -1,6 +1,6 @@
 /* eslint-disable no-undef */ // Avoid the linter considering truffle elements as undef.
 const Auction = artifacts.require('Auction.sol')
-const { expectThrow, increaseTime } = require('./helpers')
+const { expectThrow, increaseTime, getGasLimit } = require('./helpers')
 
 contract('Auction', function (accounts) {
   let owner = accounts[0]
@@ -156,6 +156,12 @@ contract('Auction', function (accounts) {
     await auction.sendTransaction({ value: 0, from: bidderA })
     var balanceAfterA = web3.eth.getBalance(bidderA).toNumber()
     assert.closeTo(balanceBeforeA + 1e18, balanceAfterA, 0.01 * 1e18, "bidder A didn't receive correct refund"); // closeTo because of the gas fees
+  });
+
+  it('Should be able to give me the gas limit', async function() {
+    var limit = await getGasLimit();
+
+    console.log(limit);
   });
   
 });

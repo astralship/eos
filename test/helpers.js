@@ -5,8 +5,15 @@ module.exports = {
 
  mineBlock: () => {
    web3.currentProvider.send({jsonrpc: "2.0", method: "evm_mine"})
- },
+ }, 
 
+ getGasLimit: () => {
+   return web3.currentProvider.send({jsonrpc: "2.0", method: "eth_getBlockByNumber", params: ["latest", true]})
+ }, 
+
+ getTransaction: hash => {
+   return web3.currentProvider.send({jsonrpc: "2.0", method: "eth_getTransactionReceipt", params: [hash]})
+ },
 
  expectThrow: async promise => {
 
