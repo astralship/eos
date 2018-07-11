@@ -6,10 +6,12 @@ import "./Auction.sol";
 
 contract AuctionMultiple is Auction {
 
-
-  uint constant HEAD = 120000000 * 1e18; // uint(-1); // really big number
-  uint constant TAIL = 0;
+  uint public constant HEAD = 120000000 * 1e18; // uint(-1); // really big number
+  uint public constant TAIL = 0;
   uint public lastBidID = 0;
+  uint public acceptedBids = 0;
+  uint public cutOffBidID = TAIL; // the last bid that gets it, the remainder will be refunded
+  uint public howMany; // number of items to sell, for isntance 40k tickets to a concert
   uint private TEMP = 0; // need to use it when creating new struct
  
   struct Bid {
@@ -21,8 +23,9 @@ contract AuctionMultiple is Auction {
 
   mapping (uint => Bid) public bids; // Map bidID to bid
   mapping (address => uint) public contributors; 
-    
-  uint public howMany; // number of items to sell, for isntance 40k tickets to a concert
+  
+  event Withdrawal(address addr, uint value, bool succees);
+
 
   event LogNumber(uint number);
   event LogText(string text);
@@ -80,15 +83,19 @@ contract AuctionMultiple is Auction {
         } 
 
     } else { // bid from this guy does not exist, create a new one
-        //  accountsList.push[msg.sender]; // adding guy to the list so that at the end we know how to refund
+        require(msg.value >= price, "Not much sense sending less than the price, likely an error"); // but it is OK to bid below the cut off bid, some guys may withdraw
+        require(lastBidID < 4000, "Due to blockGas limit we limit number of people in the auction to 4000 - round arbitrary number - check test gasLimit folder for more info");
 
-        require(msg.value >= price, "Not much sense sending less than the price, likely an error");
+        lastBidID++;
+        acceptedBids++;
 
-        ++lastBidID;
-
-        contributors[msg.sender] = lastBidID;
+        if (msg.value > bids[cutOffBidID].value && acceptedBids > howMany) {
+          cutOffBidID = bids[cutOffBidID].next;
+        }
 
         insertionBidId = searchInsertionPoint(msg.value, TAIL);
+
+        contributors[msg.sender] = lastBidID;
 
         bids[lastBidID] = Bid({
           prev: insertionBidId,
@@ -142,7 +149,43 @@ contract AuctionMultiple is Auction {
   }
 
   function withdraw() public {
-    
+    withdraw(msg.sender);
+  }
+
+  function withdraw(address addr) private {
+    uint myBidId = contributors[addr];
+
+    require(myBidId > 0, "the guy with this address does not exist, makes no sense to witdraw");
+
+    Bid memory myBid = bids[ myBidId ];
+    Bid memory cutOffBid = bids[cutOffBidID];
+    if (myBid.value < cutOffBid.value) { // below treshhold, can withdraw
+
+      bids[ myBid.prev ].next = myBid.next;
+      bids[ myBid.next ].prev = myBid.prev;
+
+      delete bids[ myBidId ]; // clearning storage
+      delete contributors[ msg.sender ]; // clearning storage
+
+      acceptedBids--;
+
+      addr.transfer(myBid.value);
+      emit Withdrawal(addr, myBid.value, true); // true for success
+    } else {
+      emit Withdrawal(addr, myBid.value, false); // false for fail
+    }
+  }
+
+  function withdrawOnBehalf(address addr) public onlyOwner {
+    withdraw(addr);
+  }
+
+  function finalize() public ended() onlyOwner() {
+    require(finalized == false, "can withdraw only once");
+    require(initialPrice == false, "can withdraw only if there were bids");
+
+    finalized = true;
+    beneficiary.transfer(1); // TODO: calculate amount to witdraw
   }
 
 

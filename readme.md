@@ -12,6 +12,18 @@ I've figured out how to run the Docker  on my Mac but before I achieve a certain
 *(chances are it will take you some time as well to figure out how to securely transact on the EOS blockchain)*
 -->
 
+// REFUND
+
+// TODO: minting a NFT
+
+// TODO: extend time 
+
+// TODO: store cut-off bid value ! ! ! ! ! 
+
+// TODO: clear storage
+https://ethereum.stackexchange.com/questions/26923/how-to-remove-the-contract-storage-associated-with-instance-variables
+
+
 ### Front-end Dapp
 
 * Not yet.

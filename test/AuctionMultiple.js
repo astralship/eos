@@ -291,18 +291,4 @@ contract('AuctionMultiple', function (accounts) {
     assert.equal(pos4.toNumber(), 2);
   });
 
-  
-  // SOME NEW LESSONS LEARNT: https://github.com/kleros/openiico-contract/pull/30#issuecomment-402139640
-
-  // it('Should ran out of gas when limit is very small', async function() {
-
-  //   var limit = await getGasLimit();
-
-  //   console.log(limit);
-
-  //   for (let i=0; i<10; i++) {
-  //       await auction.sendTransaction({ value: i * 1e18, from: accounts[i] });
-  //   }
-  // });
-
 });
