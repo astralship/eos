@@ -1,6 +1,6 @@
 /* eslint-disable no-undef */ // Avoid the linter considering truffle elements as undef.
 const AuctionMultiple = artifacts.require('AuctionMultiple.sol')
-const { expectThrow, increaseTime, getGasLimit, getTransaction } = require('./helpers')
+const { expectThrow, increaseTime } = require('./helpers')
 
 contract('AuctionMultiple', function (accounts) {
   let owner = accounts[0]
