@@ -8,7 +8,10 @@ contract('AuctionMultiple', function (accounts) {
   let bidderB = accounts[2]
   let bidderC = accounts[3]
   let bidderD = accounts[4]
-  let beneficiary = accounts[5]
+  let bidderE = accounts[5]
+  let bidderF = accounts[6]
+  let bidderG = accounts[7]
+  let beneficiary = accounts[8]
   let address0 = "0x0000000000000000000000000000000000000000";
   
   let day = 24 * 60 * 60;
@@ -31,7 +34,7 @@ contract('AuctionMultiple', function (accounts) {
 
   beforeEach(async function() {
     timestampEnd = web3.eth.getBlock('latest').timestamp  +  duration;
-    auction = await AuctionMultiple.new(1e18, "item", timestampEnd, beneficiary, 5, {from: owner});
+    auction = await AuctionMultiple.new(1e18, "item", timestampEnd, beneficiary, 3, {from: owner});
   });
 
   it('Should be able to set up the constructor auction', async function() {
@@ -39,7 +42,7 @@ contract('AuctionMultiple', function (accounts) {
     assert.equal(await auction.description(), "item", 'The description is not set correctly')
     assert.equal(await auction.timestampEnd(), timestampEnd, 'The endtime is not set correctly')
     assert.equal(await auction.beneficiary(), beneficiary, 'The beneficiary is not set correctly')
-    assert.equal(await auction.howMany(), 5, 'The beneficiary is not set correctly')
+    assert.equal(await auction.howMany(), 3, 'The number of winners is not set correctly')
   });
 
   it('Should set HEAD and TAIL bids', async function() {
@@ -247,7 +250,7 @@ contract('AuctionMultiple', function (accounts) {
     assert.equal(tailBid[1].toNumber(), newBidId2);    
   });
 
-  it('Correctly tell position of the bids', async function() {
+  it('Should orrectly tell position of the bids', async function() {
     let moar = 1.1e18;
     await auction.sendTransaction({ value: contribution1, from: bidderA });
     await auction.sendTransaction({ value: contribution2, from: bidderB });
@@ -290,5 +293,50 @@ contract('AuctionMultiple', function (accounts) {
     assert.equal(pos3.toNumber(), 1);
     assert.equal(pos4.toNumber(), 2);
   });
+
+  it('Should not allow witdrawal of currently winning bids (as user and as owner) ', async function() {
+    await auction.sendTransaction({ value: contribution1, from: bidderA });
+    await auction.sendTransaction({ value: contribution2, from: bidderB });
+
+    var withdrawal1 = await auction.withdraw.call({ from: bidderA }); // Friendly reminder about syntax: https://github.com/trufflesuite/truffle/issues/121#issuecomment-202239679
+    assert.equal(withdrawal1, false);
+
+    var withdrawal2 = await auction.withdrawOnBehalf.call(bidderB, { from: owner });
+    assert.equal(withdrawal2, false);
+  });  
+
+  it('Should allow witdrawal of non winning bids ', async function() {
+    await auction.sendTransaction({ value: 1e18, from: bidderA });
+    await auction.sendTransaction({ value: 2e18, from: bidderB });
+    await auction.sendTransaction({ value: 3e18, from: bidderC });
+    await auction.sendTransaction({ value: 4e18, from: bidderD });
+    await auction.sendTransaction({ value: 5e18, from: bidderE });
+    await auction.sendTransaction({ value: 6e18, from: bidderF });
+    await auction.sendTransaction({ value: 7e18, from: bidderG });
+
+    var balanceBefore = web3.eth.getBalance(bidderA).toNumber();
+    var withdrawal1 = await auction.withdraw.call({ from: bidderA }); 
+    var balanceAfter = web3.eth.getBalance(bidderA).toNumber();
+
+    auction.fuckme();
+
+    var sum = balanceBefore + contribution1;
+    console.log(sum)
+    console.log(balanceBefore);
+    console.log(contribution1)
+    console.log(balanceAfter);
+
+    assert.closeTo(balanceBefore + contribution1, balanceAfter, 0.01 * 1e18, "something went wrong with witdrawal as user");
+
+    assert.equal(withdrawal1, true);
+
+    // balanceBefore = web3.eth.getBalance(bidderE);
+    // var withdrawal2 = await auction.withdrawOnBehalf.call(bidderE, { from: owner });
+    // assert.equal(withdrawal2, true);
+    // assert.closeTo(parseInt(balanceBefore) + parseInt(contribution1), web3.eth.getBalance(bidderE), 0.01 * 1e18, "something went wrong with witdrawal as owner");
+  });
+
+
+  // Cannot withdraw more than once ! ! ! ! ! 
 
 });
