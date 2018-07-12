@@ -71,7 +71,7 @@ contract('AuctionMultipleGuaranteed', function (accounts) {
     assert.equal(tailBid[1].toNumber(), headBidId);
   });
 
-  it('Should accept a guaranteed bid and then place a regular one', async function() {
+  it('Should accept a guaranteed bids and then place a regular one (after they are exhausted)', async function() {
     await auction.sendTransaction({ value: guaranteed, from: bidderA });
     await auction.sendTransaction({ value: guaranteed, from: bidderB });
     await auction.sendTransaction({ value: guaranteed, from: bidderC });
@@ -89,8 +89,30 @@ contract('AuctionMultipleGuaranteed', function (accounts) {
     var tailBid = await auction.bids.call(tailBidId);
     assert.equal(tailBid[0].toNumber(), headBidId);
     assert.equal(tailBid[1].toNumber(), newBidId1);
+
+    // should update other counters as well
+
+    var howManyGuaranteed = await auction.howManyGuaranteed.call()
+    var howMany = await auction.howMany.call()
+    assert.equal(howManyGuaranteed, 0, "no more guaranteed left");
+    assert.equal(howMany, 2, "two regular remaining");
+
   });
 
+it('Should correctly finalize the thing', async function() {
+    await auction.sendTransaction({ value: guaranteed, from: bidderA });
+    await auction.sendTransaction({ value: guaranteed + 1e18, from: bidderB });
+    await auction.sendTransaction({ value: guaranteed, from: bidderC });
+    await auction.sendTransaction({ value: guaranteed, from: bidderD });
+
+    increaseTime(duration + 1);
+
+    var balanceBefore = await web3.eth.getBalance(beneficiary).toNumber();
+    await auction.finalize({ from: owner });
+    var balanceAfter = await web3.eth.getBalance(beneficiary).toNumber();
+    assert.closeTo(balanceBefore + (guranteed * 4) + 1e18, balanceAfter, 0.01 * 1e18, "finalized amount is not correct");    
+
+  });
 
 
 });

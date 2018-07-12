@@ -27,6 +27,13 @@ It crashes when using 2500
 `ganache-cli -a 2000`
 
 
+https://ethereum.stackexchange.com/questions/35252/solidity-for-loop-over-a-huge-amount-of-data
+
+
+
+
+
+
 
 ```
   Contract: AuctionMultiple - Gas Limit
@@ -190,4 +197,4 @@ F 75333
 
 To place a bid after 1500 others it takes 1.9m gas.
 
-I'm using an arbitrary limit - 4000 people - to be on the safe side and never exceed block gas limit.
+I'm using an arbitrary limit - 2000 people - to be on the safe side and never exceed block gas limit.
