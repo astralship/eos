@@ -23,7 +23,7 @@ contract AuctionMultipleGuaranteed is AuctionMultiple {
 
   function() public payable {
     if (msg.value == 0) {
-      withdraw();
+      refund();
     } else {
       require(now < timestampEnd, "cannot bid after the auction ends");
       require(guaranteedContributions[msg.sender] == 0, "already a guranteed contributor, cannot more than once");

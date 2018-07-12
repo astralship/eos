@@ -26,9 +26,6 @@ contract AuctionMultiple is Auction {
   mapping (uint => Bid) public bids; // Map bidID to bid
   mapping (address => uint) public contributors; 
   
-  event Withdrawal(address addr, uint value, bool succees);
-
-
   event LogNumber(uint number);
   event LogText(string text);
   event LogAddress(address addr);
@@ -53,7 +50,7 @@ contract AuctionMultiple is Auction {
 
   function() public payable {
     if (msg.value == 0) {
-      withdraw();
+      refund();
     } else {
       bid();
     }  
@@ -144,43 +141,45 @@ contract AuctionMultiple is Auction {
     return getPosition(msg.sender);
   }
 
-  function withdraw() public {
-    withdraw(msg.sender);
+  function refund() public {
+    refund(msg.sender);
   }
 
-  function withdrawOnBehalf(address addr) public onlyOwner {
-    withdraw(addr);
+  function refundOnBehalf(address addr) public onlyOwner() {
+    refund(addr);
   }
 
-  function withdraw(address addr) private {
-    uint myBidId = contributors[addr];
-
-    require(myBidId > 0, "the guy with this address does not exist, makes no sense to witdraw");
-
-    Bid memory myBid = bids[ myBidId ];
-
+  function refund(address addr) private {
+    uint bidId = contributors[addr];
+    require(bidId > 0, "the guy with this address does not exist, makes no sense to witdraw");
     uint position = getPosition(addr);
-
     require(position > howMany, "only the non-winning bids can be withdrawn");
 
-    bids[ myBid.prev ].next = myBid.next;
-    bids[ myBid.next ].prev = myBid.prev;
+    Bid memory thisBid = bids[ bidId ];
+    bids[ thisBid.prev ].next = thisBid.next;
+    bids[ thisBid.next ].prev = thisBid.prev;
 
-    delete bids[ myBidId ]; // clearning storage
+    delete bids[ bidId ]; // clearning storage
     delete contributors[ msg.sender ]; // clearning storage
 
     acceptedBids--;
-
-    addr.transfer(myBid.value);
-    emit Withdrawal(addr, myBid.value, true);
+    emit Refund(addr, thisBid.value, now);
+    addr.transfer(thisBid.value);
   }
 
   function finalize() public ended() onlyOwner() {
-    require(finalized == false, "can withdraw only once");
-    require(initialPrice == false, "can withdraw only if there were bids");
-
+    require(finalized == false, "auction already finalized, can withdraw only once");
     finalized = true;
-    beneficiary.transfer(1); // TODO: calculate amount to witdraw
+
+    uint sumContributions = 0;
+    uint counter = 0;
+    Bid memory currentBid = bids[HEAD];
+    while(++counter < howMany && currentBid.prev != TAIL) {
+      currentBid = bids[ currentBid.prev ];
+      sumContributions += currentBid.value;
+    }
+
+    beneficiary.transfer(sumContributions);
   }
 
 

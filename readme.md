@@ -18,10 +18,13 @@ I've figured out how to run the Docker  on my Mac but before I achieve a certain
 
 // TODO: extend time 
 
-// TODO: store cut-off bid value ! ! ! ! ! 
+// BETTER TOOLING
 
-// TODO: clear storage
-https://ethereum.stackexchange.com/questions/26923/how-to-remove-the-contract-storage-associated-with-instance-variables
+https://blog.colony.io/code-coverage-for-solidity-eecfa88668c2
+
+// REMOVE ARTIFICIAL LIMIT
+
+
 
 
 ### Front-end Dapp

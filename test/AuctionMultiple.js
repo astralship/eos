@@ -298,8 +298,8 @@ contract('AuctionMultiple', function (accounts) {
     await auction.sendTransaction({ value: contribution1, from: bidderA });
     await auction.sendTransaction({ value: contribution2, from: bidderB });
 
-    await expectThrow( auction.withdraw({ from: bidderA }) );
-    await expectThrow( auction.withdrawOnBehalf(bidderB, { from: owner }) );
+    await expectThrow( auction.refund({ from: bidderA }) );
+    await expectThrow( auction.refundOnBehalf(bidderB, { from: owner }) );
   });  
 
   it('Should allow witdrawal of non winning bids ', async function() {
@@ -312,17 +312,37 @@ contract('AuctionMultiple', function (accounts) {
     await auction.sendTransaction({ value: 7e18, from: bidderG });
 
     var balanceBefore = await web3.eth.getBalance(bidderA).toNumber();
-    await auction.withdraw({ from: bidderA }); 
+    await auction.refund({ from: bidderA }); 
     var balanceAfter = await web3.eth.getBalance(bidderA).toNumber();
-    assert.closeTo(balanceBefore + 1e18, balanceAfter, 0.01 * 1e18, "something went wrong with witdrawal as user");
+    assert.closeTo(balanceBefore + 1e18, balanceAfter, 0.01 * 1e18, "something went wrong with refund as user");
 
     balanceBefore = await web3.eth.getBalance(bidderD).toNumber();
-    await expectThrow( auction.withdrawOnBehalf(bidderD, { from: beneficiary }) ); // only owner
-    await auction.withdrawOnBehalf(bidderD, { from: owner }); 
+    await expectThrow( auction.refundOnBehalf(bidderD, { from: beneficiary }) ); // only owner
+    await auction.refundOnBehalf(bidderD, { from: owner }); 
+    await expectThrow( auction.refundOnBehalf(bidderD, { from: owner }) ); // only once
     balanceAfter = await web3.eth.getBalance(bidderD).toNumber();
-    assert.closeTo(balanceBefore + 4e18, balanceAfter, 0.01 * 1e18, "something went wrong with witdrawal on behalf as admin");
+    assert.closeTo(balanceBefore + 4e18, balanceAfter, 0.01 * 1e18, "something went wrong with refund on behalf as admin");
 
-    await expectThrow( auction.withdrawOnBehalf(bidderE, { from: owner }) ); // Cannot witdraw winnin bids
+    await expectThrow( auction.refundOnBehalf(bidderE, { from: owner }) ); // Cannot witdraw winnin bids
+  });
+
+  if('Should allow to finalize and witdraw funds to beneficiary', async function() {
+    await auction.sendTransaction({ value: 1e18, from: bidderA });
+    await auction.sendTransaction({ value: 2e18, from: bidderB });
+    await auction.sendTransaction({ value: 3e18, from: bidderC });
+    await auction.sendTransaction({ value: 4e18, from: bidderD });
+    await auction.sendTransaction({ value: 5e18, from: bidderE });
+    await auction.sendTransaction({ value: 6e18, from: bidderF });
+    await auction.sendTransaction({ value: 7e18, from: bidderG });
+
+    increaseTime(duration + 1);
+
+    var balanceBefore = await web3.eth.getBalance(beneficiary).toNumber();
+    await auction.finalize({ from: owner });
+    var balanceAfter = await web3.eth.getBalance(beneficiary).toNumber();
+    assert.closeTo(balanceBefore + 5e18 + 6e18 + 7e18, balanceAfter, 0.01 * 1e18, "something went wrong with refund as user");
+
+    await expectThrow( auction.finalize({ from: owner }) ); // only once
   });
 
 
