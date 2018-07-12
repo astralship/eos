@@ -298,11 +298,8 @@ contract('AuctionMultiple', function (accounts) {
     await auction.sendTransaction({ value: contribution1, from: bidderA });
     await auction.sendTransaction({ value: contribution2, from: bidderB });
 
-    var withdrawal1 = await auction.withdraw.call({ from: bidderA }); // Friendly reminder about syntax: https://github.com/trufflesuite/truffle/issues/121#issuecomment-202239679
-    assert.equal(withdrawal1, false);
-
-    var withdrawal2 = await auction.withdrawOnBehalf.call(bidderB, { from: owner });
-    assert.equal(withdrawal2, false);
+    await expectThrow( auction.withdraw({ from: bidderA }) );
+    await expectThrow( auction.withdrawOnBehalf(bidderB, { from: owner }) );
   });  
 
   it('Should allow witdrawal of non winning bids ', async function() {
@@ -314,29 +311,19 @@ contract('AuctionMultiple', function (accounts) {
     await auction.sendTransaction({ value: 6e18, from: bidderF });
     await auction.sendTransaction({ value: 7e18, from: bidderG });
 
-    var balanceBefore = web3.eth.getBalance(bidderA).toNumber();
-    var withdrawal1 = await auction.withdraw.call({ from: bidderA }); 
-    var balanceAfter = web3.eth.getBalance(bidderA).toNumber();
+    var balanceBefore = await web3.eth.getBalance(bidderA).toNumber();
+    await auction.withdraw({ from: bidderA }); 
+    var balanceAfter = await web3.eth.getBalance(bidderA).toNumber();
+    assert.closeTo(balanceBefore + 1e18, balanceAfter, 0.01 * 1e18, "something went wrong with witdrawal as user");
 
-    auction.fuckme();
+    balanceBefore = await web3.eth.getBalance(bidderB).toNumber();
+    await expectThrow( auction.withdrawOnBehalf(bidderB, { from: beneficiary }) ); // only owner
+    await auction.withdrawOnBehalf(bidderB, { from: owner }); 
+    balanceAfter = await web3.eth.getBalance(bidderB).toNumber();
+    assert.closeTo(balanceBefore + 2e18, balanceAfter, 0.01 * 1e18, "something went wrong with witdrawal on behalf as admin");
 
-    var sum = balanceBefore + contribution1;
-    console.log(sum)
-    console.log(balanceBefore);
-    console.log(contribution1)
-    console.log(balanceAfter);
-
-    assert.closeTo(balanceBefore + contribution1, balanceAfter, 0.01 * 1e18, "something went wrong with witdrawal as user");
-
-    assert.equal(withdrawal1, true);
-
-    // balanceBefore = web3.eth.getBalance(bidderE);
-    // var withdrawal2 = await auction.withdrawOnBehalf.call(bidderE, { from: owner });
-    // assert.equal(withdrawal2, true);
-    // assert.closeTo(parseInt(balanceBefore) + parseInt(contribution1), web3.eth.getBalance(bidderE), 0.01 * 1e18, "something went wrong with witdrawal as owner");
+    await expectThrow( auction.withdrawOnBehalf(bidderE, { from: owner }) ); // Cannot witdraw winnin bids
   });
 
-
-  // Cannot withdraw more than once ! ! ! ! ! 
 
 });

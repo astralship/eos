@@ -155,51 +155,34 @@ contract AuctionMultiple is Auction {
     return getPosition(msg.sender);
   }
 
-  // CODE REVIEW / AUDIT PLEASE
-  // What is the best practice here?
-  // An option would be:
-  // require(myBid.value < cutOffBid.value, "only the non-winning bids can be withdrawn")
-
-  function fuckme() public {
-    emit LogText("fuckme");
+  function withdraw() public {
+    withdraw(msg.sender);
   }
 
-  function withdraw() public returns (bool) {
-    emit LogText("withdraw");
-
-    bool result = withdraw(msg.sender);
-    return result;
+  function withdrawOnBehalf(address addr) public onlyOwner {
+    withdraw(addr);
   }
 
-  function withdraw(address addr) private returns (bool) {
+  function withdraw(address addr) private {
     uint myBidId = contributors[addr];
 
     require(myBidId > 0, "the guy with this address does not exist, makes no sense to witdraw");
 
     Bid memory myBid = bids[ myBidId ];
     Bid memory cutOffBid = bids[cutOffBidID];
-    if (myBid.value < cutOffBid.value) { // below treshhold, can withdraw
 
-      bids[ myBid.prev ].next = myBid.next;
-      bids[ myBid.next ].prev = myBid.prev;
+    require(myBid.value < cutOffBid.value, "only the non-winning bids can be withdrawn");
 
-      delete bids[ myBidId ]; // clearning storage
-      delete contributors[ msg.sender ]; // clearning storage
+    bids[ myBid.prev ].next = myBid.next;
+    bids[ myBid.next ].prev = myBid.prev;
 
-      acceptedBids--;
+    delete bids[ myBidId ]; // clearning storage
+    delete contributors[ msg.sender ]; // clearning storage
 
-      addr.transfer(myBid.value);
-      emit Withdrawal(addr, myBid.value, true);
-      return true; // returning value so that we can test
-    } else {
-      emit Withdrawal(addr, myBid.value, false);
-      return false;
-    }
-  }
+    acceptedBids--;
 
-  function withdrawOnBehalf(address addr) public onlyOwner returns (bool){
-    bool result = withdraw(addr);
-    return result;
+    addr.transfer(myBid.value);
+    emit Withdrawal(addr, myBid.value, true);
   }
 
   function finalize() public ended() onlyOwner() {
