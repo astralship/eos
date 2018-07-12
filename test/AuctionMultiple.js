@@ -326,7 +326,7 @@ contract('AuctionMultiple', function (accounts) {
     await expectThrow( auction.refundOnBehalf(bidderE, { from: owner }) ); // Cannot witdraw winnin bids
   });
 
-  if('Should allow to finalize and witdraw funds to beneficiary', async function() {
+  it('Should allow to finalize and witdraw funds to beneficiary', async function() {
     await auction.sendTransaction({ value: 1e18, from: bidderA });
     await auction.sendTransaction({ value: 2e18, from: bidderB });
     await auction.sendTransaction({ value: 3e18, from: bidderC });
@@ -335,14 +335,28 @@ contract('AuctionMultiple', function (accounts) {
     await auction.sendTransaction({ value: 6e18, from: bidderF });
     await auction.sendTransaction({ value: 7e18, from: bidderG });
 
+    await expectThrow( auction.finalize({ from: owner }) ); // cannot finalize before the end
+
     increaseTime(duration + 1);
 
     var balanceBefore = await web3.eth.getBalance(beneficiary).toNumber();
     await auction.finalize({ from: owner });
     var balanceAfter = await web3.eth.getBalance(beneficiary).toNumber();
-    assert.closeTo(balanceBefore + 5e18 + 6e18 + 7e18, balanceAfter, 0.01 * 1e18, "something went wrong with refund as user");
+    assert.closeTo(balanceBefore + 5e18 + 6e18 + 7e18, balanceAfter, 0.01 * 1e18, "finalized amount is not correct");
 
     await expectThrow( auction.finalize({ from: owner }) ); // only once
+  });  
+
+  it('Should allow to finalize and witdraw funds to beneficiary, when not all things are sold', async function() {
+    await auction.sendTransaction({ value: 1e18, from: bidderA });
+    await auction.sendTransaction({ value: 2e18, from: bidderB });
+
+    increaseTime(duration + 1);
+
+    var balanceBefore = await web3.eth.getBalance(beneficiary).toNumber();
+    await auction.finalize({ from: owner });
+    var balanceAfter = await web3.eth.getBalance(beneficiary).toNumber();
+    assert.closeTo(balanceBefore + 1e18 + 2e18, balanceAfter, 0.01 * 1e18, "finalized amount is not correct");
   });
 
 

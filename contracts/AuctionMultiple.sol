@@ -7,7 +7,7 @@ import "./Auction.sol";
 
 contract AuctionMultiple is Auction {
 
-  uint public constant LIMIT = 4000; // due to gas restrictions we limit the number of participants in the auction (no Burning Man tickets yet)
+  uint public constant LIMIT = 2000; // due to gas restrictions we limit the number of participants in the auction (no Burning Man tickets yet)
   uint public constant HEAD = 120000000 * 1e18; // uint(-1); // really big number
   uint public constant TAIL = 0;
   uint public lastBidID = 0;
@@ -174,7 +174,7 @@ contract AuctionMultiple is Auction {
     uint sumContributions = 0;
     uint counter = 0;
     Bid memory currentBid = bids[HEAD];
-    while(++counter < howMany && currentBid.prev != TAIL) {
+    while(counter++ < howMany && currentBid.prev != TAIL) {
       currentBid = bids[ currentBid.prev ];
       sumContributions += currentBid.value;
     }

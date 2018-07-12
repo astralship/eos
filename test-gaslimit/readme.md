@@ -3,6 +3,31 @@ https://github.com/kleros/openiico-contract/pull/30#issuecomment-402139640
 
 
 
+
+
+```
+module.exports = {
+  networks: {
+    development: {
+      host: "localhost",
+      port: 8545,
+      network_id: "*", // Match any network id
+      gas: 6000000
+    }
+  }
+};
+```
+
+
+https://gitter.im/ConsenSys/truffle?at=5b4735c21c0f906b144b3a7a
+
+It crashes when using 2500
+
+
+`ganache-cli -a 2000`
+
+
+
 ```
   Contract: AuctionMultiple - Gas Limit
     ✓ Should be able to set up the constructor auction (92ms)

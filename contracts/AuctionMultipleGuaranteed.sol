@@ -32,6 +32,7 @@ contract AuctionMultipleGuaranteed is AuctionMultiple {
         guaranteedContributors.push(msg.sender);
         guaranteedContributions[msg.sender] = msg.value;
         howManyGuaranteed--;
+        howMany--;
         emit GuaranteedBid(msg.sender, msg.value);
       } else {
         bid();
