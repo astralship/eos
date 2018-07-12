@@ -100,31 +100,45 @@ contract('Auction', function (accounts) {
     await expectThrow(auction.finalize({ from: owner })); // cannot withdraw more than once
   });  
 
-  it('Other guys should get a refund ', async function() {
-    await auction.sendTransaction({ value: 1e18, from: bidderA });
-    await auction.sendTransaction({ value: 1.5e18, from: bidderB });
-    await auction.sendTransaction({ value: 2e18, from: bidderC });
+  // REMOVED DANGEROUS METHOD
+  // https://github.com/astralship/eos/issues/11
 
-    increaseTime(duration + 1);
+  // function refundContributors() public ended() onlyOwner() {
+  //   bids[winner] = 0; // setting it to zero that in the refund loop it is skipped
+  //   for (uint i = 0; i < accountsList.length;  i++) {
+  //     if (bids[accountsList[i]] > 0) {
+  //       uint refundValue = bids[accountsList[i]];
+  //       bids[accountsList[i]] = 0;
+  //       accountsList[i].transfer(refundValue); 
+  //     }
+  //   }
+  // }    
 
-    var balanceBeforeA = web3.eth.getBalance(bidderA).toNumber()
-    var balanceBeforeB = web3.eth.getBalance(bidderB).toNumber()
-    var balanceBeforeC = web3.eth.getBalance(bidderC).toNumber()
-    var balanceBeforeBen = web3.eth.getBalance(beneficiary).toNumber()
+  // it('Other guys should get a refund ', async function() {
+  //   await auction.sendTransaction({ value: 1e18, from: bidderA });
+  //   await auction.sendTransaction({ value: 1.5e18, from: bidderB });
+  //   await auction.sendTransaction({ value: 2e18, from: bidderC });
 
-    await auction.finalize({ from: owner });
-    await auction.refundContributors({ from: owner });
+  //   increaseTime(duration + 1);
 
-    var balanceAfterA = web3.eth.getBalance(bidderA).toNumber()
-    var balanceAfterB = web3.eth.getBalance(bidderB).toNumber()
-    var balanceAfterC = web3.eth.getBalance(bidderC).toNumber()
-    var balanceAfterBen = web3.eth.getBalance(beneficiary).toNumber()
+  //   var balanceBeforeA = web3.eth.getBalance(bidderA).toNumber()
+  //   var balanceBeforeB = web3.eth.getBalance(bidderB).toNumber()
+  //   var balanceBeforeC = web3.eth.getBalance(bidderC).toNumber()
+  //   var balanceBeforeBen = web3.eth.getBalance(beneficiary).toNumber()
 
-    assert.equal(balanceBeforeA + 1e18, balanceAfterA, "bidder A didn't receive correct refund")
-    assert.equal(balanceBeforeB + 1.5e18, balanceAfterB, "bidder B didn't receive correct refund")
-    assert.equal(balanceBeforeC, balanceAfterC, "bidder C should not receive any (he is the winner)")
-    assert.equal(balanceBeforeBen + 2e18, balanceAfterBen, "beneficiary receive correct refund")
-  });
+  //   await auction.finalize({ from: owner });
+  //   await auction.refundContributors({ from: owner });
+
+  //   var balanceAfterA = web3.eth.getBalance(bidderA).toNumber()
+  //   var balanceAfterB = web3.eth.getBalance(bidderB).toNumber()
+  //   var balanceAfterC = web3.eth.getBalance(bidderC).toNumber()
+  //   var balanceAfterBen = web3.eth.getBalance(beneficiary).toNumber()
+
+  //   assert.equal(balanceBeforeA + 1e18, balanceAfterA, "bidder A didn't receive correct refund")
+  //   assert.equal(balanceBeforeB + 1.5e18, balanceAfterB, "bidder B didn't receive correct refund")
+  //   assert.equal(balanceBeforeC, balanceAfterC, "bidder C should not receive any (he is the winner)")
+  //   assert.equal(balanceBeforeBen + 2e18, balanceAfterBen, "beneficiary receive correct refund")
+  // });
 
   it('Should fail if some random guy wants a refund', async function() {
     await auction.sendTransaction({ value: 1e18, from: bidderA });

@@ -87,26 +87,23 @@ contract Auction {
     beneficiary.transfer(price);
   }
 
-  function refundContributors() public ended() onlyOwner() {
-    bids[winner] = 0; // setting it to zero that in the refund loop it is skipped
-    for (uint i = 0; i < accountsList.length;  i++) {
-      if (bids[accountsList[i]] > 0) {
-        uint refundValue = bids[accountsList[i]];
-        bids[accountsList[i]] = 0;
-        accountsList[i].transfer(refundValue); 
-      }
-    }
-  }   
+  function refund(address addr) private {
+    require(addr != winner, "winner cannot refund");
+    require(bids[addr] > 0, "refunds only allowed if you sent something");
+
+    uint refundValue = bids[addr];
+    bids[addr] = 0; // reentrancy fix, setting to zero first
+    addr.transfer(refundValue);
+    
+    emit Refund(addr, refundValue, now);
+  }
 
   function refund() public {
-    require(msg.sender != winner, "winner cannot refund");
-    require(bids[msg.sender] > 0, "refunds only allowed if you sent something");
+    refund(msg.sender);
+  }
 
-    uint refundValue = bids[msg.sender];
-    bids[msg.sender] = 0; // reentrancy fix, setting to zero first
-    msg.sender.transfer(refundValue);
-    
-    emit Refund(msg.sender, refundValue, now);
+  function refundOnBehalf(address addr) public onlyOwner() {
+    refund(addr);
   }
 
 }

@@ -141,14 +141,6 @@ contract AuctionMultiple is Auction {
     return getPosition(msg.sender);
   }
 
-  function refund() public {
-    refund(msg.sender);
-  }
-
-  function refundOnBehalf(address addr) public onlyOwner() {
-    refund(addr);
-  }
-
   function refund(address addr) private {
     uint bidId = contributors[addr];
     require(bidId > 0, "the guy with this address does not exist, makes no sense to witdraw");

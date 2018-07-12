@@ -110,7 +110,7 @@ it('Should correctly finalize the thing', async function() {
     var balanceBefore = await web3.eth.getBalance(beneficiary).toNumber();
     await auction.finalize({ from: owner });
     var balanceAfter = await web3.eth.getBalance(beneficiary).toNumber();
-    assert.closeTo(balanceBefore + (guranteed * 4) + 1e18, balanceAfter, 0.01 * 1e18, "finalized amount is not correct");    
+    assert.closeTo(balanceBefore + (guaranteed * 4) + 1e18, balanceAfter, 0.01 * 1e18, "finalized amount is not correct");    
 
   });
 

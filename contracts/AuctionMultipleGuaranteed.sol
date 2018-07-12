@@ -55,7 +55,7 @@ contract AuctionMultipleGuaranteed is AuctionMultiple {
 
     // At all times we are aware of gas limits - that's why we limit auction to 2000 participants
     // See also `test-gasLimit` folder
-    for (uint i=0; i<guaranteedContributors; i++) {
+    for (uint i=0; i<guaranteedContributors.length; i++) {
       sumContributions += guaranteedContributions[ guaranteedContributors[i] ];
     }
 

@@ -20,7 +20,7 @@ contract('AuctionMultiple - Gas Limit', function (accounts) {
 
   beforeEach(async function() {
     timestampEnd = web3.eth.getBlock('latest').timestamp  +  duration;
-    auction = await AuctionMultiple.new(1e16, "item", timestampEnd, beneficiary, iterations-1, {from: owner}); // 3999 winning bids so that it's a long loop to summarise
+    auction = await AuctionMultiple.new(1e16, "item", timestampEnd, beneficiary, iterations, {from: owner}); // 3999 winning bids so that it's a long loop to summarise
   });
 
   it('Should calculate gas usage to create multiple bids', async function() {
@@ -59,9 +59,13 @@ contract('AuctionMultiple - Gas Limit', function (accounts) {
   it('Should be able to witdraw and send to beneficiary too', async function() {
     this.timeout(6000000); // Test takes too long to load, need increase default timeout: https://stackoverflow.com/a/35398816/775359
     var gasUsed = 0; // calculating delta - it is about 1142 more gas for each additional transaction because more comparisons in while loop for insertion point
+    var beneficiaryGets = 0;
 
     for (let i=0; i<iterations; i++) {
-      var tx = await auction.sendTransaction({ value: (10 + iterations - i) * 1e16, from: accounts[i] }); // different order of iterations, so that it's faster (less checks when finding right spot)
+      var value = (10 + iterations - i) * 1e16;
+      beneficiaryGets += value;
+
+      var tx = await auction.sendTransaction({ value: value, from: accounts[i] }); // different order of iterations, so that it's faster (less checks when finding right spot)
       
       if (i % 10 === 0) {
         console.log(i + "\t" + tx.receipt.gasUsed + "\t" + (tx.receipt.gasUsed - gasUsed));
@@ -69,13 +73,6 @@ contract('AuctionMultiple - Gas Limit', function (accounts) {
 
       gasUsed = tx.receipt.gasUsed;
     }
-
-    var win1 = (10 + iterations - 0) * 1e16;
-    var win2 = (10 + iterations - 1) * 1e16;
-    var win3 = (10 + iterations - 2) * 1e16;
-    var win4 = (10 + iterations - 3) * 1e16;
-    var win5 = (10 + iterations - 4) * 1e16;
-    var beneficiaryGets = win1 + win2 + win3 + win4 + win5;
 
     increaseTime(duration + 1);
 
