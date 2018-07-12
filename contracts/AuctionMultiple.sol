@@ -7,11 +7,12 @@ import "./Auction.sol";
 
 contract AuctionMultiple is Auction {
 
+  uint public constant LIMIT = 4000; // due to gas restrictions we limit the number of participants in the auction (no Burning Man tickets yet)
   uint public constant HEAD = 120000000 * 1e18; // uint(-1); // really big number
   uint public constant TAIL = 0;
   uint public lastBidID = 0;
   uint public acceptedBids = 0;
-  uint public cutOffBidID = TAIL; // the first one below the treshhold, all above get
+  
   uint public howMany; // number of items to sell, for isntance 40k tickets to a concert
   uint private TEMP = 0; // need to use it when creating new struct
  
@@ -33,9 +34,6 @@ contract AuctionMultiple is Auction {
   event LogAddress(address addr);
   
   constructor(uint _price, string _description, uint _timestampEnd, address _beneficiary, uint _howMany) Auction(_price, _description, _timestampEnd, _beneficiary) public {
-    emit LogText("constructor");
-
-
     require(_howMany > 1, "This auction is suited to multiple items. With 1 item only - use different code. Or remove this 'require' - you've been warned");
     howMany = _howMany;
 
@@ -54,7 +52,6 @@ contract AuctionMultiple is Auction {
   }
 
   function() public payable {
-    emit LogText("fallback");
     if (msg.value == 0) {
       withdraw();
     } else {
@@ -70,49 +67,41 @@ contract AuctionMultiple is Auction {
     
     if (myBidId > 0) { // sender has already placed bid, we increase the existing one
         
-        Bid storage existingBid = bids[myBidId];
-        existingBid.value = existingBid.value + msg.value;
-        if (existingBid.value > bids[existingBid.next].value) { // else do nothing (we are lower than the next one)
-          insertionBidId = searchInsertionPoint(existingBid.value, existingBid.next);
+      Bid storage existingBid = bids[myBidId];
+      existingBid.value = existingBid.value + msg.value;
+      if (existingBid.value > bids[existingBid.next].value) { // else do nothing (we are lower than the next one)
+        insertionBidId = searchInsertionPoint(existingBid.value, existingBid.next);
 
-          bids[existingBid.prev].next = existingBid.next;
-          bids[existingBid.next].prev = existingBid.prev;
+        bids[existingBid.prev].next = existingBid.next;
+        bids[existingBid.next].prev = existingBid.prev;
 
-          existingBid.prev = insertionBidId;
-          existingBid.next = bids[insertionBidId].next;
+        existingBid.prev = insertionBidId;
+        existingBid.next = bids[insertionBidId].next;
 
-          bids[ bids[insertionBidId].next ].prev = myBidId;
-          bids[insertionBidId].next = myBidId;
-
-          // TODO UPDATE CUTOFF WITDRAWAL BID HERE... ! ! ! ! ! ! ! ! ! ! ! 
-
-        } 
+        bids[ bids[insertionBidId].next ].prev = myBidId;
+        bids[insertionBidId].next = myBidId;
+      } 
 
     } else { // bid from this guy does not exist, create a new one
-        require(msg.value >= price, "Not much sense sending less than the price, likely an error"); // but it is OK to bid below the cut off bid, some guys may withdraw
-        require(lastBidID < 4000, "Due to blockGas limit we limit number of people in the auction to 4000 - round arbitrary number - check test gasLimit folder for more info");
+      require(msg.value >= price, "Not much sense sending less than the price, likely an error"); // but it is OK to bid below the cut off bid, some guys may withdraw
+      require(lastBidID < LIMIT, "Due to blockGas limit we limit number of people in the auction to 4000 - round arbitrary number - check test gasLimit folder for more info");
 
-        lastBidID++;
-        acceptedBids++;
+      lastBidID++;
+      acceptedBids++;
 
-        insertionBidId = searchInsertionPoint(msg.value, TAIL);
+      insertionBidId = searchInsertionPoint(msg.value, TAIL);
 
-        contributors[msg.sender] = lastBidID;
+      contributors[msg.sender] = lastBidID;
 
-        bids[lastBidID] = Bid({
-          prev: insertionBidId,
-          next: bids[insertionBidId].next,
-          value: msg.value,
-          contributor: msg.sender
-        });
+      bids[lastBidID] = Bid({
+        prev: insertionBidId,
+        next: bids[insertionBidId].next,
+        value: msg.value,
+        contributor: msg.sender
+      });
 
-        bids[ bids[insertionBidId].next ].prev = lastBidID;
-        bids[insertionBidId].next = lastBidID;
-
-        if (msg.value >= bids[cutOffBidID].value && acceptedBids >= howMany) { // the moment acceptedBids == howMany the last accepted bid becomes cutOffBid
-          cutOffBidID = bids[cutOffBidID].next;
-        }
-
+      bids[ bids[insertionBidId].next ].prev = lastBidID;
+      bids[insertionBidId].next = lastBidID;
     }
   }
 
@@ -143,7 +132,7 @@ contract AuctionMultiple is Auction {
 
     Bid memory currentBid = bids[HEAD];
 
-    while (currentBid.prev != bidId) { // BIG LOOP WARNING ! ! ! ! ! ! ! ! !
+    while (currentBid.prev != bidId) { // BIG LOOP WARNING, that why we have LIMIT TODO: provide starting index to the loop, to avoid out of gas errors
       currentBid = bids[currentBid.prev];
       position++;
     }
@@ -169,9 +158,10 @@ contract AuctionMultiple is Auction {
     require(myBidId > 0, "the guy with this address does not exist, makes no sense to witdraw");
 
     Bid memory myBid = bids[ myBidId ];
-    Bid memory cutOffBid = bids[cutOffBidID];
 
-    require(myBid.value < cutOffBid.value, "only the non-winning bids can be withdrawn");
+    uint position = getPosition(addr);
+
+    require(position > howMany, "only the non-winning bids can be withdrawn");
 
     bids[ myBid.prev ].next = myBid.next;
     bids[ myBid.next ].prev = myBid.prev;

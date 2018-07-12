@@ -316,11 +316,11 @@ contract('AuctionMultiple', function (accounts) {
     var balanceAfter = await web3.eth.getBalance(bidderA).toNumber();
     assert.closeTo(balanceBefore + 1e18, balanceAfter, 0.01 * 1e18, "something went wrong with witdrawal as user");
 
-    balanceBefore = await web3.eth.getBalance(bidderB).toNumber();
-    await expectThrow( auction.withdrawOnBehalf(bidderB, { from: beneficiary }) ); // only owner
-    await auction.withdrawOnBehalf(bidderB, { from: owner }); 
-    balanceAfter = await web3.eth.getBalance(bidderB).toNumber();
-    assert.closeTo(balanceBefore + 2e18, balanceAfter, 0.01 * 1e18, "something went wrong with witdrawal on behalf as admin");
+    balanceBefore = await web3.eth.getBalance(bidderD).toNumber();
+    await expectThrow( auction.withdrawOnBehalf(bidderD, { from: beneficiary }) ); // only owner
+    await auction.withdrawOnBehalf(bidderD, { from: owner }); 
+    balanceAfter = await web3.eth.getBalance(bidderD).toNumber();
+    assert.closeTo(balanceBefore + 4e18, balanceAfter, 0.01 * 1e18, "something went wrong with witdrawal on behalf as admin");
 
     await expectThrow( auction.withdrawOnBehalf(bidderE, { from: owner }) ); // Cannot witdraw winnin bids
   });
