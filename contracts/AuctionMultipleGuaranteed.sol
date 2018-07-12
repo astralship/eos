@@ -2,7 +2,7 @@ pragma solidity ^0.4.23;
 
 import "./AuctionMultiple.sol";
 
-// 1, "something", 1529659548, "0xca35b7d915458ef540ade6068dfe2f44e8fa733c", 3
+// 100000000000000000, "membership in Casa Crypto", 1546300799, "0x8855Ef4b740Fc23D822dC8e1cb44782e52c07e87", 20, 5, 5000000000000000000
 
 // For instance: effering limited "Early Bird" tickets that are guaranteed
 contract AuctionMultipleGuaranteed is AuctionMultiple {
@@ -22,23 +22,19 @@ contract AuctionMultipleGuaranteed is AuctionMultiple {
     priceGuaranteed = _priceGuaranteed;
   }
 
-  function() public payable {
-    if (msg.value == 0) {
-      refund();
-    } else {
-      require(now < timestampEnd, "cannot bid after the auction ends");
-      require(guaranteedContributions[msg.sender] == 0, "already a guranteed contributor, cannot more than once");
+  function bid() public payable {
+    require(now < timestampEnd, "cannot bid after the auction ends");
+    require(guaranteedContributions[msg.sender] == 0, "already a guranteed contributor, cannot more than once");
 
-      if (msg.value >= priceGuaranteed && howManyGuaranteed > 0) {
-        guaranteedContributors.push(msg.sender);
-        guaranteedContributions[msg.sender] = msg.value;
-        howManyGuaranteed--;
-        howMany--;
-        emit GuaranteedBid(msg.sender, msg.value);
-      } else {
-        bid();
-      }
-    } 
+    if (msg.value >= priceGuaranteed && howManyGuaranteed > 0) {
+      guaranteedContributors.push(msg.sender);
+      guaranteedContributions[msg.sender] = msg.value;
+      howManyGuaranteed--;
+      howMany--;
+      emit GuaranteedBid(msg.sender, msg.value);
+    } else {
+      super.bid(); // https://ethereum.stackexchange.com/questions/25046/inheritance-and-function-overwriting-who-can-call-the-parent-function
+    }
   }
 
   function finalize() public ended() onlyOwner() {
@@ -53,8 +49,7 @@ contract AuctionMultipleGuaranteed is AuctionMultiple {
       sumContributions += currentBid.value;
     }
 
-    // At all times we are aware of gas limits - that's why we limit auction to 2000 participants
-    // See also `test-gasLimit` folder
+    // At all times we are aware of gas limits - that's why we limit auction to 2000 participants, see also `test-gasLimit` folder
     for (uint i=0; i<guaranteedContributors.length; i++) {
       sumContributions += guaranteedContributions[ guaranteedContributors[i] ];
     }

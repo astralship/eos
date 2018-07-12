@@ -11,7 +11,6 @@ contract AuctionMultiple is Auction {
   uint public constant HEAD = 120000000 * 1e18; // uint(-1); // really big number
   uint public constant TAIL = 0;
   uint public lastBidID = 0;
-  uint public acceptedBids = 0;
   
   uint public howMany; // number of items to sell, for isntance 40k tickets to a concert
   uint private TEMP = 0; // need to use it when creating new struct
@@ -48,14 +47,6 @@ contract AuctionMultiple is Auction {
     });    
   }
 
-  function() public payable {
-    if (msg.value == 0) {
-      refund();
-    } else {
-      bid();
-    }  
-  }
-
   function bid() public payable {
     require(now < timestampEnd, "cannot bid after the auction ends");
 
@@ -84,7 +75,6 @@ contract AuctionMultiple is Auction {
       require(lastBidID < LIMIT, "Due to blockGas limit we limit number of people in the auction to 4000 - round arbitrary number - check test gasLimit folder for more info");
 
       lastBidID++;
-      acceptedBids++;
 
       insertionBidId = searchInsertionPoint(msg.value, TAIL);
 
@@ -100,6 +90,40 @@ contract AuctionMultiple is Auction {
       bids[ bids[insertionBidId].next ].prev = lastBidID;
       bids[insertionBidId].next = lastBidID;
     }
+
+    emit BidEvent(msg.sender, msg.value, now);
+  }
+
+  function refund(address addr) private {
+    uint bidId = contributors[addr];
+    require(bidId > 0, "the guy with this address does not exist, makes no sense to witdraw");
+    uint position = getPosition(addr);
+    require(position > howMany, "only the non-winning bids can be withdrawn");
+
+    Bid memory thisBid = bids[ bidId ];
+    bids[ thisBid.prev ].next = thisBid.next;
+    bids[ thisBid.next ].prev = thisBid.prev;
+
+    delete bids[ bidId ]; // clearning storage
+    delete contributors[ msg.sender ]; // clearning storage
+
+    addr.transfer(thisBid.value);
+    emit Refund(addr, thisBid.value, now);
+  }
+
+  function finalize() public ended() onlyOwner() {
+    require(finalized == false, "auction already finalized, can withdraw only once");
+    finalized = true;
+
+    uint sumContributions = 0;
+    uint counter = 0;
+    Bid memory currentBid = bids[HEAD];
+    while(counter++ < howMany && currentBid.prev != TAIL) {
+      currentBid = bids[ currentBid.prev ];
+      sumContributions += currentBid.value;
+    }
+
+    beneficiary.transfer(sumContributions);
   }
 
   // We are  starting from TAIL and going upwards
@@ -129,50 +153,15 @@ contract AuctionMultiple is Auction {
 
     Bid memory currentBid = bids[HEAD];
 
-    while (currentBid.prev != bidId) { // BIG LOOP WARNING, that why we have LIMIT TODO: provide starting index to the loop, to avoid out of gas errors
+    while (currentBid.prev != bidId) { // BIG LOOP WARNING, that why we have LIMIT
       currentBid = bids[currentBid.prev];
       position++;
     }
     return position;
   }
 
-  // shorthand for calling without parameters
-  function getPosition() view public returns(uint) {
+  function getPosition() view public returns(uint) { // shorthand for calling without parameters
     return getPosition(msg.sender);
   }
-
-  function refund(address addr) private {
-    uint bidId = contributors[addr];
-    require(bidId > 0, "the guy with this address does not exist, makes no sense to witdraw");
-    uint position = getPosition(addr);
-    require(position > howMany, "only the non-winning bids can be withdrawn");
-
-    Bid memory thisBid = bids[ bidId ];
-    bids[ thisBid.prev ].next = thisBid.next;
-    bids[ thisBid.next ].prev = thisBid.prev;
-
-    delete bids[ bidId ]; // clearning storage
-    delete contributors[ msg.sender ]; // clearning storage
-
-    acceptedBids--;
-    emit Refund(addr, thisBid.value, now);
-    addr.transfer(thisBid.value);
-  }
-
-  function finalize() public ended() onlyOwner() {
-    require(finalized == false, "auction already finalized, can withdraw only once");
-    finalized = true;
-
-    uint sumContributions = 0;
-    uint counter = 0;
-    Bid memory currentBid = bids[HEAD];
-    while(counter++ < howMany && currentBid.prev != TAIL) {
-      currentBid = bids[ currentBid.prev ];
-      sumContributions += currentBid.value;
-    }
-
-    beneficiary.transfer(sumContributions);
-  }
-
 
 }

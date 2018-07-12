@@ -21,7 +21,7 @@ contract Auction {
   uint public increaseTimeBy = 24 * 60 * 60;
   
 
-  event BidEvent(address indexed winner, uint indexed price, uint indexed timestamp); // cannot have event and struct with the same name
+  event BidEvent(address indexed bidder, uint indexed price, uint indexed timestamp); // cannot have event and struct with the same name
   // event Refund(address indexed sender, uint indexed amount, uint indexed timestamp);
   event Refund(address addr, uint value, uint timestamp);
 
@@ -47,13 +47,16 @@ contract Auction {
     beneficiary = _beneficiary;
   }
 
+  // Same for all the derived contract, it's the implementation of refund() and bid() that differs
   function() public payable {
-
-    if (msg.value == 0) { // when sending `0` it acts as if it was `withdraw`
+    if (msg.value == 0) {
       refund();
-      return;
-    }
+    } else {
+      bid();
+    }  
+  }
 
+  function bid() public payable {
     require(now < timestampEnd, "auction has ended"); // sending ether only allowed before the end
 
     if (bids[msg.sender] > 0) { // First we add the bid to an existing bid
