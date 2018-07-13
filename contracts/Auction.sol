@@ -14,6 +14,7 @@ contract Auction {
   address public winner;
   mapping(address => uint) public bids;
   address[] public accountsList; // so we can iterate: https://ethereum.stackexchange.com/questions/13167/are-there-well-solved-and-simple-storage-patterns-for-solidity
+  function getAccountListLenght() public constant returns(uint) { return accountsList.length; } // lenght is not accessible from DApp, exposing convenience method: https://stackoverflow.com/questions/43016011/getting-the-length-of-public-array-variable-getter
 
   // THINK: should be (an optional) constructor parameter?
   // For now if you want to change - simply modify the code

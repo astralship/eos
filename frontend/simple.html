@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Withdraw</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="web3.min.js"></script>
+  </head>
+  <body ng-controller="ctrl">
+
+    <button id="withdrawAll">withdrawAll</button>
+
+    <script>
+
+      var ABI = [];
+      var Contract;
+      var Instance;
+
+      window.addEventListener('load', function() {
+
+        if (typeof web3 !== 'undefined') {
+            web3 = new Web3(web3.currentProvider);
+        } else {
+            // set the provider you want from Web3.providers
+            web3 = new Web3(new Web3.providers.HttpProvider("http://localhost:8545"));
+        }
+
+        web3.eth.defaultAccount = web3.eth.accounts[1];
+        Contract = web3.eth.contract(ABI);
+        Instance = Contract.at('0x12ec0d27f8453bce565ee186bde7e31a87ed5e0b');
+      })
+
+       $("#withdrawAll").on("click", function() {
+          Instance.withdrawAll(function(err, result) {
+            console.log(err, result);
+          });
+       });
+     </script>
+
+  </body>
+</html>
+

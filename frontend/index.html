@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Learning</title>
+<!--     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.9/angular.js"></script>     -->
+
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.2/css/bootstrap.min.css" integrity="sha384-Smlep5jCw/wG7hdkwQ/Z5nLIefveQRIY9nfy6xoR1uRYBtpZgI6339F5dgvm/e9B" crossorigin="anonymous">
+
+    <script src="./lib/jquery.min.js"></script>
+    <script src="./lib/angular.min.js"></script>
+  </head>
+  <body>
+  
+    <div class="container-fluid">
+      <div id="metamask-notloaded" style="display: none">
+        <h3>You need web3...</h3>
+        <h3>Metamask is the most popular</h3>
+        <p>You can also try mist, trust wallet, anything really... The application was tested with Metamask.</p>
+        
+      </div>    
+
+      <div id="metamask-locked" style="display: none">
+        <span class="locked">
+          <h1>Metamask is there but you need to unlock it.</h1>
+          <h3>please unlock your thing</h3>
+        </span>      
+        <span class="unlocked" style="display: none;">
+          <h1>thank you for unlocking</h1>
+          <h3><a href="" onclick="window.location.reload()">reload the app</a></h3>
+        </span>
+      </div>
+
+      <div id="angular-app" ng-controller="ctrl" style="display: none"> <!-- manual bootstrap, loading web3 stuff first -->
+
+
+        <h3>Your account: {{ myAccount }}</h3>
+        <h3>Network: <span id="network"></span></h3>
+        <h3>Auction: <span id="desription"></span></h3>
+        <h3>Time to end: <span id="timestampEnd"></span></h3>
+
+        <table>
+          <tr>
+            <th>account</th><th>bid</th>
+          </tr>
+          <tr ng-repeat="account in accounts| orderBy:'bid':true">
+            <td>{{ account.address }}</td>
+            <td>{{ account.bid }}</td>
+          </tr>
+        </table>        
+
+
+        <table>
+          <tr>
+            <th>account</th><th>bid</th><th>timestamp</th>
+          </tr>
+          <tr ng-repeat="bid in bids">
+            <td>{{ account.bidder }}</td>
+            <td>{{ account.price }}</td>
+            <td>{{ account.timestamp }}</td>
+          </tr>
+        </table>
+
+
+
+
+        <p><a href="https://onet.pl">onet.pl</a></p> <!-- testing for clicking on external links and reloading -->
+      </div>
+    </div>
+
+     <script src="ethereum.js"></script>
+     <script src="app.js"></script>
+  </body>
+</html>
+
