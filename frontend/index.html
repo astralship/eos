@@ -50,15 +50,16 @@
           </tr>
         </table>        
 
-
         <table>
           <tr>
-            <th>account</th><th>bid</th><th>timestamp</th>
+            <th>account</th><th>bid</th><th>timestamp</th><th>tx</th><th>block</th>
           </tr>
           <tr ng-repeat="bid in bids">
-            <td>{{ account.bidder }}</td>
-            <td>{{ account.price }}</td>
-            <td>{{ account.timestamp }}</td>
+            <td>{{ bid.bidder }}</td>
+            <td>{{ bid.price }}</td>
+            <td>{{ bid.timestamp }}</td>
+            <td><a href="https://ropsten.etherscan.io/tx/{{ bid.tx }}">{{ bid.tx }}</a></td>
+            <td><a href="https://ropsten.etherscan.io/block/{{ bid.block }}">{{ bid.block }}</a></td>
           </tr>
         </table>
 

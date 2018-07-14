@@ -34,13 +34,21 @@ app.controller('ctrl', function($scope, $q) {
   });
 
   let bigEvent = Instance.BidEvent({}, {fromBlock: 0, toBlock: 'latest'})
-  bigEvent.get(function(error, logs) {
+  bigEvent.get(function(error, events) {
 
-  	var bid = {
-  		
-  	}
-    // we have the logs, now print them
-    logs.forEach(log => console.log(log.args))
+  	events.forEach(function(event) {
+  		console.log(event);
+  		var bid = {
+  			bidder: event.args.bidder,
+  			price: +web3.fromWei( event.args.price.toNumber() ),
+  			timestamp: event.args.timestamp.toNumber(),
+  			tx: event.transactionHash,
+  			block: event.blockNumber
+  		}
+  		$scope.bids.push(bid);
+  	});
+
+  	$scope.$apply();
   });
 
 

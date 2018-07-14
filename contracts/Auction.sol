@@ -80,7 +80,7 @@ contract Auction {
     initialPrice = false;
     price = bids[msg.sender];
     winner = msg.sender;
-    emit BidEvent(winner, price, now);
+    emit BidEvent(winner, msg.value, now); // THINK: I prefer sharing the value of the current transaction, the total value can be retrieved from the array
   }
 
   function finalize() public ended() onlyOwner() {
