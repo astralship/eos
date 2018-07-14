@@ -10,11 +10,9 @@ contract AuctionMultiple is Auction {
   uint public constant LIMIT = 2000; // due to gas restrictions we limit the number of participants in the auction (no Burning Man tickets yet)
   uint public constant HEAD = 120000000 * 1e18; // uint(-1); // really big number
   uint public constant TAIL = 0;
-  uint public lastBidID = 0;
-  
+  uint public lastBidID = 0;  
   uint public howMany; // number of items to sell, for isntance 40k tickets to a concert
-  uint private TEMP = 0; // need to use it when creating new struct
- 
+
   struct Bid {
     uint prev;            // bidID of the previous element.
     uint next;            // bidID of the next element.
@@ -22,8 +20,8 @@ contract AuctionMultiple is Auction {
     address contributor;  // The contributor who placed the bid.
   }    
 
-  mapping (uint => Bid) public bids; // Map bidID to bid
-  mapping (address => uint) public contributors; 
+  mapping (uint => Bid) public bids; // map bidID to actual Bid structure
+  mapping (address => uint) public contributors; // map address to bidID
   
   event LogNumber(uint number);
   event LogText(string text);
@@ -79,6 +77,7 @@ contract AuctionMultiple is Auction {
       insertionBidId = searchInsertionPoint(msg.value, TAIL);
 
       contributors[msg.sender] = lastBidID;
+      accountsList.push(msg.sender);
 
       bids[lastBidID] = Bid({
         prev: insertionBidId,
@@ -106,6 +105,7 @@ contract AuctionMultiple is Auction {
 
     delete bids[ bidId ]; // clearning storage
     delete contributors[ msg.sender ]; // clearning storage
+    // cannot delete from accountsList - cannot shrink an array in place without spending shitloads of gas
 
     addr.transfer(thisBid.value);
     emit Refund(addr, thisBid.value, now);

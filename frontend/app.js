@@ -33,6 +33,10 @@ app.controller('ctrl', function($scope, $q) {
    console.log(error, result);
   });
 
+
+
+  
+
   let bigEvent = Instance.BidEvent({}, {fromBlock: 0, toBlock: 'latest'})
   bigEvent.get(function(error, events) {
 
@@ -50,6 +54,8 @@ app.controller('ctrl', function($scope, $q) {
 
   	$scope.$apply();
   });
+
+
 
 
 

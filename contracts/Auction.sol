@@ -23,8 +23,7 @@ contract Auction {
   
 
   event BidEvent(address indexed bidder, uint indexed price, uint indexed timestamp); // cannot have event and struct with the same name
-  // event Refund(address indexed sender, uint indexed amount, uint indexed timestamp);
-  event Refund(address addr, uint value, uint timestamp);
+  event Refund(address indexed addr, uint indexed value, uint indexed timestamp);
 
   
   modifier onlyOwner { require(owner == msg.sender, "only owner"); _; }
