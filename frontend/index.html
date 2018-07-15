@@ -38,23 +38,35 @@
           </tr>
         </table>        
 
-        <table>
-          <tr>
-            <th>account</th><th>bid</th><th>timestamp</th><th>tx</th><th>block</th>
-          </tr>
-          <tr ng-repeat="bid in bids">
-            <td>{{ bid.bidder }}</td>
-            <td>{{ bid.price }}</td>
-            <td>{{ bid.timestamp }}</td>
-            <td><a href="https://ropsten.etherscan.io/tx/{{ bid.tx }}">{{ bid.tx }}</a></td>
-            <td><a href="https://ropsten.etherscan.io/block/{{ bid.block }}">{{ bid.block }}</a></td>
-          </tr>
-        </table>
+
+        <span ng-show="$root.metamask">
+          <h3>More detailed info</h3>
+
+          <table>
+            <tr>
+              <th>account</th><th>bid</th><th>timestamp</th><th>tx</th><th>block</th>
+            </tr>
+            <tr ng-repeat="bid in bids">
+              <td>{{ bid.bidder }}</td>
+              <td>{{ bid.price }}</td>
+              <td>{{ bid.timestamp }}</td>
+              <td><a href="https://ropsten.etherscan.io/tx/{{ bid.tx }}">{{ bid.tx }}</a></td>
+              <td><a href="https://ropsten.etherscan.io/block/{{ bid.block }}">{{ bid.block }}</a></td>
+            </tr>
+          </table>
+        </span>
 
 
+        http://bit.ly/casacrypto
+        https://t.me/CasaCryptoIbiza
 
 
-        <p><a href="https://onet.pl">onet.pl</a></p> <!-- testing for clicking on external links and reloading -->
+        <span ng-show="! $root.metamask">
+          <h3>Metamask required to obtain more data</h3>
+          <p>See <a href="https://github.com/INFURA/infura/issues/13#issuecomment-405077145">this</a> and <a href="https://github.com/INFURA/infura/issues/73#issuecomment-405078968">that</a> GitHub issue. I'm not the smartest, not the most experienced Ethereum programmer on this planet and I've wasted (invested) enough time trying to get it to work. Just install MetaMask babe for full functionality, can you imagine, we are still in technology early days, internet in 1996.</p>
+          <img src="images/metamask.jpg">
+        </span>
+
       </div>
     </div>
 

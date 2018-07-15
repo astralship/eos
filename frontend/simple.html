@@ -20,12 +20,8 @@
 
       window.addEventListener('load', function() {
 
-        if (typeof web3 !== 'undefined') {
-            web3 = new Web3(web3.currentProvider);
-        } else {
-            // set the provider you want from Web3.providers
-            web3 = new Web3(new Web3.providers.HttpProvider("https://ropsten.infura.io/hi8olE2lF8OqjyBSdtSm "));
-        }
+        // web3 = new Web3(web3.currentProvider);
+        web3 = new Web3(new Web3.providers.HttpProvider("https://ropsten.infura.io/hi8olE2lF8OqjyBSdtSm "));
 
         Contract = web3.eth.contract(ABI);
         Instance = Contract.at('0x3BF530b7A5a1f2235f9A1C6518A6C26672BB6163');
